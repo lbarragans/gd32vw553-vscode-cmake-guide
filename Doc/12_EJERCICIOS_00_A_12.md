@@ -10,8 +10,8 @@
    `Doc/7_PLAN_DE_VALIDACION.md`.
 6. Ejecute primero la referencia original.
 7. Integre Assembly siguiendo el capítulo 9.
-8. Integre FreeRTOS siguiendo el capítulo 10 solo cuando exista un port
-   GD32VW553/ECLIC confirmado.
+8. Copie `FreeRTOS_Puro/` al MSDK V1.0.3g siguiendo el capítulo 10; el port
+   GD32VW553/ECLIC proviene del SDK oficial.
 9. Registre compilación, flash, observación física y variables GDB por separado.
 
 ## Mapa académico y evidencia esperada
@@ -160,10 +160,10 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 ## Estado honesto de ejecución
 
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
-- Los Assembly son fuentes de aplicación; su integración debe compilarse y
-  validarse en el proyecto real.
-- Los FreeRTOS de 00–11 requieren completar/validar el BSP del RTOS.
-- El FreeRTOS de 12 se ejecuta sobre el SDK WiFi oficial V1.0.3g.
+- Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
+  construyen con `tools/build_variant.ps1`.
+- Los FreeRTOS de 00–12 son aplicaciones del MSDK oficial V1.0.3g.
+- La prueba física de cada variante debe registrarse sobre la placa real.
 - El Assembly de 12 no implementa radio ni TCP; valida la capa de aplicación.
 
 ## Hoja de registro sugerida

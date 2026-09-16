@@ -20,7 +20,7 @@ Instale:
 | CMake | <https://cmake.org/download/> | generar el sistema de construcción |
 | Ninja | <https://github.com/ninja-build/ninja/releases> | ejecutar las reglas de compilación |
 | GD32VW553 y recursos | <https://www.gigadevice.com/product/mcu/wireless-mcus/gd32vw553-series> | ficha, SDK, firmware y herramientas GD32 |
-| FreeRTOS Kernel | <https://github.com/FreeRTOS/FreeRTOS-Kernel> | kernel para la integración docente 00–11 |
+| MSDK oficial GD32VW553 | <https://www.gigadevice.com/product/mcu/mcus-product-selector/gd32vw553hmq6> | FreeRTOS, port Nuclei/ECLIC, MBL, WiFi y lwIP para las variantes FreeRTOS 00–12 |
 
 Descargue herramientas de fabricante únicamente desde GigaDevice. Los nombres
 y versiones visibles en el portal pueden cambiar; para reproducir los
@@ -31,9 +31,21 @@ Hay dos paquetes GD32 diferentes:
 | Paquete | Ejercicios | Contenido |
 | --- | --- | --- |
 | `GD32VW55x_Firmware_Library_V1.6.0` | 00–11 | startup, linker, drivers y ejemplos bare-metal |
-| `GD32VW55x_RELEASE_V1.0.3g` | 12 | MBL/MSDK, FreeRTOS, WiFi, lwIP y firmware de radio |
+| `GD32VW55x_RELEASE_V1.0.3g` | FreeRTOS 00–12 | MBL/MSDK, FreeRTOS, port Nuclei/ECLIC, WiFi, lwIP y firmware de radio |
 
 No reemplace uno por el otro solo porque ambos contienen `GD32VW55x`.
+Para ejecutar estos laboratorios no descargue ni mezcle un kernel FreeRTOS
+genérico: use el que viene integrado en `GD32VW55x_RELEASE_V1.0.3g`.
+
+En la página oficial del dispositivo, localice exactamente
+`GD32VW55x_RELEASE_V1.0.3g`, descárguelo y compruebe el archivo con:
+
+```powershell
+Get-ChildItem "$HOME\Downloads" |
+  Where-Object Name -Match "GD32VW55x.*RELEASE" |
+  Sort-Object LastWriteTime -Descending |
+  Format-Table Name,Length,LastWriteTime
+```
 
 En VS Code instale las extensiones recomendadas cuando aparezca la
 notificación del repositorio:

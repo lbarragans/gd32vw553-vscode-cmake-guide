@@ -44,6 +44,17 @@ Para enumerar puertos:
 
 Si no aparece nada, cambie cable y puerto USB antes de modificar código.
 
+En el equipo validado, Windows mostró simultáneamente:
+
+```text
+WCH CMSIS-DAP
+WCH-Link SERIAL (COM9)
+USB\VID_1A86&PID_8012
+```
+
+El COM puede cambiar entre computadores; el identificador USB del probe es el
+dato usado por OpenOCD.
+
 ## 11.4 Instalar VS Code y extensiones
 
 1. Descargue VS Code desde `https://code.visualstudio.com/`.
@@ -93,12 +104,16 @@ Complete con barras `/` o rutas PowerShell válidas:
 
 ```powershell
 $GD32_SDK_ROOT = "C:/GD32/GD32VW55x_Firmware_Library_V1.6.0"
+$GD32_MSDK_ROOT = "C:/GD32/GD32VW55x_RELEASE_V1.0.3g"
 $NUCLEI_TOOLCHAIN_DIR = "C:/ruta/toolchain/bin"
 $OPENOCD_ROOT = "C:/ruta/openocd"
 ```
 
 `OPENOCD_ROOT` debe contener `bin` y `scripts`. No publique
 `local_config.ps1`; posee rutas personales y está ignorado por Git.
+
+`GD32_SDK_ROOT` se usa para las variantes original y Assembly;
+`GD32_MSDK_ROOT`, para FreeRTOS.
 
 ## 11.7 Verificación desde VS Code
 
@@ -118,7 +133,50 @@ cmake --build --preset build-debug
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\flash.ps1 -BuildType Debug
 ```
 
-## 11.8 Configurar depuración F5
+Para comprobar únicamente la comunicación, sin borrar ni grabar la Flash:
+
+```powershell
+Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
+. .\tools\local_config.ps1
+$OpenOcdExe = Join-Path $OPENOCD_ROOT "bin\openocd.exe"
+$OpenOcdScripts = Join-Path $OPENOCD_ROOT "scripts"
+
+& $OpenOcdExe `
+  -s $OpenOcdScripts `
+  -f "interface/cmsis-dap.cfg" `
+  -c "cmsis_dap_backend usb_bulk" `
+  -c "cmsis_dap_vid_pid 0x1a86 0x8012" `
+  -c "transport select jtag" `
+  -c "adapter speed 50" `
+  -f "target/gd32vw55x.cfg" `
+  -c "init" `
+  -c "shutdown"
+```
+
+La prueba correcta muestra `Examined RISC-V core; found 1 harts`. Si aparece
+`all ones`, revise alimentación, GND, TCK, TMS, TDI y TDO antes de cambiar
+software o controladores.
+
+## 11.8 Ejecutar las tres variantes de cada ejercicio
+
+Desde la raíz del repositorio en la terminal integrada de VS Code:
+
+```powershell
+# Referencia original
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build_variant.ps1 -Variant original -Flash
+
+# Aplicación en Assembly RISC-V
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build_variant.ps1 -Variant assembly -Flash
+
+# Aplicación FreeRTOS sobre el MSDK oficial
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build_freertos.ps1 -Clean -Flash
+```
+
+También puede usar `Terminal > Run Task` y elegir la tarea equivalente. Al
+cambiar de ejercicio conserve `-Clean` en FreeRTOS para evitar objetos de la
+aplicación anterior.
+
+## 11.9 Configurar depuración F5
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\create_debug_config.ps1
@@ -134,7 +192,7 @@ VS Code -> Cortex-Debug -> GDB RISC-V -> OpenOCD -> CMSIS-DAP -> JTAG -> MCU
 No seleccione un depurador genérico de C/C++ para escritorio; intentaría abrir
 `a.exe` y no entiende el microcontrolador.
 
-## 11.9 Diagnóstico por capas
+## 11.10 Diagnóstico por capas
 
 1. **Windows no ve USB:** cable, alimentación o driver.
 2. **Windows ve USB, OpenOCD no:** interfaz, driver, puerto ocupado o ruta cfg.

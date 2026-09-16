@@ -29,11 +29,13 @@ nucleo Nuclei/ECLIC y con el SDK seleccionado.
 
 ### Ejercicios 00–11
 
-La biblioteca bare-metal `GD32VW55x_Firmware_Library_V1.6.0` aporta drivers y
-startup, pero las carpetas `FreeRTOS_Puro/` del curso contienen principalmente
-la **aplicación**. Antes de ejecutarlas todavía hay que integrar kernel, port,
-heap, configuración y tick. No deben anunciarse como validadas hasta compilar y
-probar esa integración.
+Las carpetas `FreeRTOS_Puro/` contienen los fuentes de aplicación. En el MSDK
+V1.0.3g comprobado, el proyecto Eclipse compila directamente `MSDK/app/main.c`
+y toma su configuración de `MSDK/app/app_cfg.h`. Respalde esos dos archivos y
+reemplácelos por los equivalentes del ejercicio. No cree una carpeta paralela
+esperando que sea descubierta automáticamente. `sys_os_init()`,
+`platform_init()` y `sys_os_start()` reutilizan kernel, port Nuclei/ECLIC,
+heap, tick, startup y linker del SDK oficial.
 
 ### Ejercicio 12
 
@@ -41,27 +43,18 @@ Use `GD32VW55x_RELEASE_V1.0.3g`. Este SDK ya incorpora el FreeRTOS y las capas
 WiFi/lwIP compatibles. No descargue otro kernel ni sustituya su port. Copie la
 aplicación en `MSDK/app_http_led` siguiendo el capítulo 13.
 
-## 10.4 Obtener el kernel
+## 10.4 Kernel usado por los ejercicios
 
-La fuente oficial está en:
+La fuente pública de FreeRTOS puede consultarse como referencia en:
 
 ```text
 https://github.com/FreeRTOS/FreeRTOS-Kernel
 ```
 
-Para una integración reproducible, clone una versión conocida en una carpeta
-externa al repositorio del ejercicio:
-
-```powershell
-Set-Location C:\GD32
-git clone https://github.com/FreeRTOS/FreeRTOS-Kernel.git
-Set-Location .\FreeRTOS-Kernel
-git tag --list
-```
-
-No copie automáticamente el port RISC-V hasta confirmar que soporta el modelo
-de interrupciones usado por GD32VW553. La opción más segura es partir del port
-que acompañe un ejemplo oficial de GD32VW55x o del SDK WiFi validado.
+No necesita clonarla para ejecutar ningún ejercicio. No copie ese kernel ni un
+port genérico dentro de los repositorios. Para compilar y ejecutar se usa
+exclusivamente el kernel y el port Nuclei/ECLIC que acompañan
+`GD32VW55x_RELEASE_V1.0.3g`.
 
 ## 10.5 Configuración mínima que debe decidirse
 
@@ -85,38 +78,32 @@ Estos valores son una base docente, no una garantía universal. El reloj debe
 coincidir con `SystemCoreClock`, el heap debe caber en SRAM y los nombres de
 handlers deben coincidir con el port.
 
-## 10.6 Integración CMake de referencia
+## 10.6 Integración automatizada usada por el MSDK V1.0.3g
 
-Defina la raíz externamente, no con una ruta personal publicada:
+Los ejercicios actualizados incluyen `tools/build_freertos.ps1`. El script
+respalda los archivos activos del MSDK, copia `main.c` y `app_cfg.h`, configura
+las rutas del toolchain y OpenOCD, compila MBL + MSDK y comprueba la creación de
+`scripts/images/image-all.bin`. Desde la terminal de VS Code ejecute:
 
-```cmake
-set(FREERTOS_KERNEL_ROOT "" CACHE PATH "Raiz de FreeRTOS-Kernel")
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\build_freertos.ps1 `
+  -Clean -Flash
 ```
 
-La lista típica incluye:
+Use `-Clean` al cambiar de ejercicio, porque todos comparten el directorio de
+compilación del MSDK. La programación usa WCH-Link/CMSIS-DAP en modo USB bulk,
+VID:PID `1A86:8012`, JTAG a 50 kHz y dirección base `0x08000000`.
 
-```cmake
-set(FREERTOS_SOURCES
-    "${FREERTOS_KERNEL_ROOT}/tasks.c"
-    "${FREERTOS_KERNEL_ROOT}/queue.c"
-    "${FREERTOS_KERNEL_ROOT}/list.c"
-    "${FREERTOS_KERNEL_ROOT}/event_groups.c"
-    "${FREERTOS_KERNEL_ROOT}/portable/MemMang/heap_4.c"
-    # port.c y portASM.S compatibles con GD32VW553/ECLIC
-)
-```
-
-Añada includes para la raíz del kernel, la carpeta del port y la carpeta que
-contiene `FreeRTOSConfig.h`. Sustituya `Src/main.c` por
-`FreeRTOS_Puro/main.c`; conserve los módulos adicionales que cada ejercicio
-requiera, por ejemplo `Src/sha256.c` en el ejercicio 11.
+El ejercicio 11 requiere además registrar/copiar `sha256.c` y `sha256.h`; su
+integración debe verificarse específicamente antes de compilar ese ejercicio.
 
 ## 10.7 Qué hace cada API usada en los laboratorios
 
 | API | Significado |
 | --- | --- |
 | `xTaskCreate` | crea una tarea, pila, prioridad y contexto inicial |
-| `vTaskStartScheduler` | inicia tick y planificación; normalmente no retorna |
+| `sys_os_start` | wrapper del SDK que inicia FreeRTOS; normalmente no retorna |
 | `vTaskDelay` | bloquea durante una cantidad relativa de ticks |
 | `vTaskDelayUntil` | mantiene un periodo respecto de una referencia temporal |
 | `xQueueCreate` | reserva una cola de longitud y tamaño de elemento definidos |
@@ -132,7 +119,8 @@ cambio de contexto con la macro definida por el port cuando corresponda.
 
 ## 10.8 Compilar y depurar
 
-Una vez integrada la plataforma:
+Para FreeRTOS use la tarea **Build + Flash FreeRTOS** o el comando de la sección
+10.6. Para las variantes original y Assembly se mantiene este flujo JTAG/OpenOCD:
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify_environment.ps1
@@ -143,7 +131,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\flash.ps1 -BuildType
 
 Coloque breakpoints en la primera línea de cada tarea y observe:
 
-- que `vTaskStartScheduler()` no retorna;
+- que `sys_os_start()` no retorna;
 - que una tarea bloqueada no ejecuta un bucle de espera;
 - profundidad máxima de las queues;
 - stack disponible mediante `uxTaskGetStackHighWaterMark` si está habilitado;

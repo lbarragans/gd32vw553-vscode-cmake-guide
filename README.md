@@ -59,9 +59,9 @@ Si este repositorio se usa como manual del curso, siga en orden:
 8. [flujo especial WiFi del ejercicio 12](Doc/13_EJERCICIO_12_WIFI.md).
 
 La guía distingue deliberadamente entre **fuente preparada**, **firmware que
-compila** y **variante validada en placa**. Las carpetas FreeRTOS de 00–11
-requieren completar la integración del port compatible con GD32VW553/ECLIC. El
-ejercicio 12 utiliza el FreeRTOS ya integrado en el SDK WiFi oficial.
+compila** y **variante validada en placa**. Las carpetas FreeRTOS de 00–12 se
+integran como aplicaciones del MSDK V1.0.3g para reutilizar el port
+GD32VW553/ECLIC oficial. La validación física final se registra por ejercicio.
 
 ## Comandos equivalentes
 

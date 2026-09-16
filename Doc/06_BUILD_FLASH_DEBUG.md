@@ -54,6 +54,19 @@ powershell -NoProfile -ExecutionPolicy Bypass `
   -File .\tools\flash.ps1 -BuildType Debug
 ```
 
+La configuración validada físicamente con WCH-Link CMSIS-DAP v2 es:
+
+```text
+cmsis_dap_backend usb_bulk
+cmsis_dap_vid_pid 0x1a86 0x8012
+transport select jtag
+adapter speed 50
+```
+
+Los `flash.ps1` suministrados aplican estos valores. A 100 kHz el probe llegó
+a devolver una cadena JTAG inválida; a 50 kHz reconoció los TAP Nuclei y
+GigaDevice, programó, verificó y reinició la placa.
+
 Las señales principales de éxito son:
 
 ```text

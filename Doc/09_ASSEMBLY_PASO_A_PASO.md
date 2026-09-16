@@ -36,24 +36,18 @@ La forma recomendada es crear una rama antes de integrar:
 git switch -c laboratorio/assembly
 ```
 
-## 9.4 Añadir el archivo al proyecto CMake
+## 9.4 Seleccionar el archivo en CMake
 
-Abra `CMakeLists.txt`, localice `APP_SOURCES` y sustituya únicamente el fuente
-de aplicación `Src/main.c` por:
+Los ejercicios 00–11 incorporan `APP_VARIANT=original|assembly`. El CMake
+selecciona solo una lógica de aplicación y conserva startup, sistema, drivers y
+linker script. Así se evita compilar simultáneamente dos definiciones de `main`.
 
-```cmake
-Ensamblador_RISCV_Puro/main.S
+Para construir Assembly en modo Debug:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\build_variant.ps1 -Variant assembly
 ```
-
-Conserve startup, sistema, drivers y linker script. El bloque debe mantener
-`ASM` en la declaración del proyecto:
-
-```cmake
-project(NombreDelEjercicio LANGUAGES C ASM)
-```
-
-No compile simultáneamente dos archivos que definan `main`, porque el linker
-informará `multiple definition of main`.
 
 Algunos ejercicios necesitan símbolos de infraestructura del SDK:
 
@@ -64,14 +58,14 @@ Algunos ejercicios necesitan símbolos de infraestructura del SDK:
 
 ## 9.5 Configurar y compilar
 
-Desde la raíz del ejercicio:
+Desde la raíz del ejercicio, para compilar y programar en una sola operación:
 
 ```powershell
 Copy-Item .\tools\local_config.example.ps1 .\tools\local_config.ps1 -ErrorAction SilentlyContinue
 notepad .\tools\local_config.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify_environment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\configure.ps1 -BuildType Debug
-cmake --build --preset build-debug
+powershell -NoProfile -ExecutionPolicy Bypass `
+  -File .\tools\build_variant.ps1 -Variant assembly -Flash
 ```
 
 Compruebe que el listado contiene las instrucciones esperadas:
