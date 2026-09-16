@@ -45,6 +45,24 @@ flowchart TD
 8. Compruebe que el LED de PC13 cambia de estado.
 9. Ejecute `Create Debug Configuration` y después presione `F5` para depurar.
 
+## Ruta completa para los ejercicios 00–12
+
+Si este repositorio se usa como manual del curso, siga en orden:
+
+1. [hardware y herramientas](Doc/01_HARDWARE_AND_TOOLS.md);
+2. [instalación en Windows](Doc/02_INSTALLATION_WINDOWS.md);
+3. [VS Code y reconocimiento de la placa](Doc/11_VSCODE_Y_CONEXION_PLACA.md);
+4. [compilar, programar y depurar](Doc/06_BUILD_FLASH_DEBUG.md);
+5. [Assembly paso a paso](Doc/09_ASSEMBLY_PASO_A_PASO.md);
+6. [FreeRTOS paso a paso](Doc/10_FREERTOS_PASO_A_PASO.md);
+7. [ejecución de los ejercicios 00–12](Doc/12_EJERCICIOS_00_A_12.md);
+8. [flujo especial WiFi del ejercicio 12](Doc/13_EJERCICIO_12_WIFI.md).
+
+La guía distingue deliberadamente entre **fuente preparada**, **firmware que
+compila** y **variante validada en placa**. Las carpetas FreeRTOS de 00–11
+requieren completar la integración del port compatible con GD32VW553/ECLIC. El
+ejercicio 12 utiliza el FreeRTOS ya integrado en el SDK WiFi oficial.
+
 ## Comandos equivalentes
 
 Desde PowerShell, ubicado en la raíz del repositorio:
@@ -89,6 +107,11 @@ Después de compilar aparecen en `build/debug/`:
 | [06_BUILD_FLASH_DEBUG](Doc/06_BUILD_FLASH_DEBUG.md) | Compilar, programar y depurar paso a paso. |
 | [07_CREATE_NEW_PROJECT](Doc/07_CREATE_NEW_PROJECT.md) | Crear un proyecto nuevo desde la plantilla. |
 | [08_TROUBLESHOOTING](Doc/08_TROUBLESHOOTING.md) | Diagnóstico de errores frecuentes. |
+| [09_ASSEMBLY_PASO_A_PASO](Doc/09_ASSEMBLY_PASO_A_PASO.md) | Integrar, compilar, grabar y depurar las variantes Assembly. |
+| [10_FREERTOS_PASO_A_PASO](Doc/10_FREERTOS_PASO_A_PASO.md) | Kernel, port, heap, configuración, APIs y validación. |
+| [11_VSCODE_Y_CONEXION_PLACA](Doc/11_VSCODE_Y_CONEXION_PLACA.md) | Drivers, USB, JTAG, puertos, extensiones y F5. |
+| [12_EJERCICIOS_00_A_12](Doc/12_EJERCICIOS_00_A_12.md) | Orden de ejecución y evidencia esperada para cada ejercicio. |
+| [13_EJERCICIO_12_WIFI](Doc/13_EJERCICIO_12_WIFI.md) | SDK WiFi, MBL/MSDK, UART/CH340, HTTP y alcance Assembly. |
 
 ## Estructura principal
 

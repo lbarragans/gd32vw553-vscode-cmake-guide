@@ -24,6 +24,16 @@ y la depuración no se habilitan completamente en modo restringido.
 
 Abra Extensions con `Ctrl+Shift+X` y compruebe que estén instaladas y activas.
 
+Para comprobarlas desde la terminal integrada:
+
+```powershell
+code --list-extensions | Select-String "ms-vscode.cpptools|ms-vscode.cmake-tools|marus25.cortex-debug"
+```
+
+La conexión USB, el Administrador de dispositivos, JTAG, CH340 y el diagnóstico
+por capas se explican en
+[11_VSCODE_Y_CONEXION_PLACA.md](11_VSCODE_Y_CONEXION_PLACA.md).
+
 ## Tareas incluidas
 
 Abra `Terminal > Run Task`:

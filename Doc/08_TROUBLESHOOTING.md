@@ -8,6 +8,10 @@
 4. corrija una causa y repita esa misma fase;
 5. elimine `build/` solo cuando cambie toolchain, SDK o configuración estructural.
 
+Antes de tocar el código, ubique la capa que falla: Windows/USB, OpenOCD/JTAG,
+GDB/VS Code, compilación o lógica. Consulte también
+[11_VSCODE_Y_CONEXION_PLACA.md](11_VSCODE_Y_CONEXION_PLACA.md).
+
 ## Tabla rápida
 
 | Mensaje o síntoma | Causa probable | Corrección |

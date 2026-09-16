@@ -11,12 +11,40 @@ Instale:
 5. GD32 Embedded Builder, que contiene Nuclei RISC-V GCC, GDB y OpenOCD.
 6. `GD32VW55x_Firmware_Library_V1.6.0`.
 
+## 2.1.1 Descargas y función de cada paquete
+
+| Componente | Sitio oficial | Para qué se necesita |
+| --- | --- | --- |
+| VS Code | <https://code.visualstudio.com/Download> | editor, tareas y depuración |
+| Git for Windows | <https://git-scm.com/download/win> | clonar y actualizar repositorios |
+| CMake | <https://cmake.org/download/> | generar el sistema de construcción |
+| Ninja | <https://github.com/ninja-build/ninja/releases> | ejecutar las reglas de compilación |
+| GD32VW553 y recursos | <https://www.gigadevice.com/product/mcu/wireless-mcus/gd32vw553-series> | ficha, SDK, firmware y herramientas GD32 |
+| FreeRTOS Kernel | <https://github.com/FreeRTOS/FreeRTOS-Kernel> | kernel para la integración docente 00–11 |
+
+Descargue herramientas de fabricante únicamente desde GigaDevice. Los nombres
+y versiones visibles en el portal pueden cambiar; para reproducir los
+laboratorios conserve localmente las versiones validadas que se indican aquí.
+
+Hay dos paquetes GD32 diferentes:
+
+| Paquete | Ejercicios | Contenido |
+| --- | --- | --- |
+| `GD32VW55x_Firmware_Library_V1.6.0` | 00–11 | startup, linker, drivers y ejemplos bare-metal |
+| `GD32VW55x_RELEASE_V1.0.3g` | 12 | MBL/MSDK, FreeRTOS, WiFi, lwIP y firmware de radio |
+
+No reemplace uno por el otro solo porque ambos contienen `GD32VW55x`.
+
 En VS Code instale las extensiones recomendadas cuando aparezca la
 notificación del repositorio:
 
 - C/C++ de Microsoft;
 - CMake Tools de Microsoft;
 - Cortex-Debug.
+
+Después de instalar, continúe con
+[11_VSCODE_Y_CONEXION_PLACA.md](11_VSCODE_Y_CONEXION_PLACA.md) para reconocer
+el probe, el CH340 y configurar F5.
 
 ## 2.2 Comprobar programas globales
 
