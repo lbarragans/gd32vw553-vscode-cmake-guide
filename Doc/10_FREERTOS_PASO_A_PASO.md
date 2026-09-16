@@ -83,13 +83,8 @@ handlers deben coincidir con el port.
 Los ejercicios actualizados incluyen `tools/build_freertos.ps1`. El script
 respalda los archivos activos del MSDK, copia `main.c` y `app_cfg.h`, configura
 las rutas del toolchain y OpenOCD, compila MBL + MSDK y comprueba la creación de
-`scripts/images/image-all.bin`. Desde la terminal de VS Code ejecute:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\build_freertos.ps1 `
-  -Clean -Flash
-```
+`scripts/images/image-all.bin`. En VS Code abra `Terminal > Run Task` y elija
+`Build + Flash FreeRTOS`. No escriba comandos en la consola.
 
 Use `-Clean` al cambiar de ejercicio, porque todos comparten el directorio de
 compilación del MSDK. La programación usa WCH-Link/CMSIS-DAP en modo USB bulk,
@@ -119,15 +114,10 @@ cambio de contexto con la macro definida por el port cuando corresponda.
 
 ## 10.8 Compilar y depurar
 
-Para FreeRTOS use la tarea **Build + Flash FreeRTOS** o el comando de la sección
-10.6. Para las variantes original y Assembly se mantiene este flujo JTAG/OpenOCD:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify_environment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\configure.ps1 -BuildType Debug
-cmake --build --preset build-debug
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\flash.ps1 -BuildType Debug
-```
+Para FreeRTOS use la tarea **Build + Flash FreeRTOS**. Para la referencia y
+Assembly use **Build + Flash Original** y **Build + Flash Assembly**. Todas se
+eligen desde `Terminal > Run Task`; los comandos internos quedan encapsulados
+en `.vscode/tasks.json`.
 
 Coloque breakpoints en la primera línea de cada tarea y observe:
 

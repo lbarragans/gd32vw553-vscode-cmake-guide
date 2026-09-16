@@ -93,12 +93,13 @@ Builder, úsela como raíz para acelerar.
 
 ## 11.6 Configurar rutas locales
 
-Desde la raíz del ejercicio 00–11:
+Desde el explorador lateral de VS Code:
 
-```powershell
-Copy-Item .\tools\local_config.example.ps1 .\tools\local_config.ps1
-notepad .\tools\local_config.ps1
-```
+1. Expanda la carpeta `tools`.
+2. Seleccione `local_config.example.ps1`.
+3. Use copiar y pegar desde el menú contextual.
+4. Cambie el nombre de la copia a `local_config.ps1`.
+5. Abra la copia en el editor.
 
 Complete con barras `/` o rutas PowerShell válidas:
 
@@ -124,65 +125,30 @@ $OPENOCD_ROOT = "C:/ruta/openocd"
 5. Ejecute `Build GD32 Debug`.
 6. Conecte la placa y ejecute `Flash GD32 Debug`.
 
-Comandos equivalentes:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify_environment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\configure.ps1 -BuildType Debug
-cmake --build --preset build-debug
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\flash.ps1 -BuildType Debug
-```
-
-Para comprobar únicamente la comunicación, sin borrar ni grabar la Flash:
-
-```powershell
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass -Force
-. .\tools\local_config.ps1
-$OpenOcdExe = Join-Path $OPENOCD_ROOT "bin\openocd.exe"
-$OpenOcdScripts = Join-Path $OPENOCD_ROOT "scripts"
-
-& $OpenOcdExe `
-  -s $OpenOcdScripts `
-  -f "interface/cmsis-dap.cfg" `
-  -c "cmsis_dap_backend usb_bulk" `
-  -c "cmsis_dap_vid_pid 0x1a86 0x8012" `
-  -c "transport select jtag" `
-  -c "adapter speed 50" `
-  -f "target/gd32vw55x.cfg" `
-  -c "init" `
-  -c "shutdown"
-```
-
-La prueba correcta muestra `Examined RISC-V core; found 1 harts`. Si aparece
+Durante `Flash GD32 Debug`, la prueba correcta muestra
+`Examined RISC-V core; found 1 harts`. Si aparece
 `all ones`, revise alimentación, GND, TCK, TMS, TDI y TDO antes de cambiar
 software o controladores.
 
 ## 11.8 Ejecutar las tres variantes de cada ejercicio
 
-Desde la raíz del repositorio en la terminal integrada de VS Code:
+1. Abra `Terminal > Run Task`.
+2. Seleccione **Build + Flash Original** para la referencia.
+3. Espere `Verified OK` y compruebe la evidencia física.
+4. Abra nuevamente `Terminal > Run Task`.
+5. Seleccione **Build + Flash Assembly**.
+6. Repita la comprobación.
+7. Abra nuevamente `Terminal > Run Task`.
+8. Seleccione **Build + Flash FreeRTOS**.
+9. Espere la compilación completa del MSDK y `Verified OK`.
 
-```powershell
-# Referencia original
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build_variant.ps1 -Variant original -Flash
-
-# Aplicación en Assembly RISC-V
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build_variant.ps1 -Variant assembly -Flash
-
-# Aplicación FreeRTOS sobre el MSDK oficial
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\build_freertos.ps1 -Clean -Flash
-```
-
-También puede usar `Terminal > Run Task` y elegir la tarea equivalente. Al
-cambiar de ejercicio conserve `-Clean` en FreeRTOS para evitar objetos de la
-aplicación anterior.
+La tarea FreeRTOS de los ejercicios actualizados ya incluye la limpieza al
+cambiar de aplicación.
 
 ## 11.9 Configurar depuración F5
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\create_debug_config.ps1
-```
-
-Abra Run and Debug, seleccione la configuración GD32 y presione `F5`.
+Abra `Terminal > Run Task`, ejecute **Create Debug Configuration**, abra
+**Run and Debug**, seleccione la configuración GD32 y presione `F5`.
 El flujo correcto es:
 
 ```text

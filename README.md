@@ -36,8 +36,9 @@ flowchart TD
 ## Ruta rápida
 
 1. Instale los componentes descritos en [Doc/02_INSTALLATION_WINDOWS.md](Doc/02_INSTALLATION_WINDOWS.md).
-2. Copie `tools/local_config.example.ps1` como `tools/local_config.ps1`.
-3. Cambie sus tres rutas locales.
+2. Duplique `tools/local_config.example.ps1` desde el explorador de VS Code y
+   cambie el nombre de la copia a `local_config.ps1`.
+3. Edite en esa copia las cuatro rutas locales.
 4. Abra **esta carpeta**, no su carpeta superior, en VS Code.
 5. Acepte **Trust this folder** si confía en el contenido descargado.
 6. Ejecute `Terminal > Run Task > Verify GD32 Environment`.
@@ -63,18 +64,12 @@ compila** y **variante validada en placa**. Las carpetas FreeRTOS de 00–12 se
 integran como aplicaciones del MSDK V1.0.3g para reutilizar el port
 GD32VW553/ECLIC oficial. La validación física final se registra por ejercicio.
 
-## Comandos equivalentes
+## Operación sin escribir comandos
 
-Desde PowerShell, ubicado en la raíz del repositorio:
-
-```powershell
-Copy-Item .\tools\local_config.example.ps1 .\tools\local_config.ps1
-notepad .\tools\local_config.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify_environment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\configure.ps1 -BuildType Debug
-cmake --build --preset build-debug
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\flash.ps1 -BuildType Debug
-```
+El procedimiento docente se realiza desde los menús de VS Code. Los scripts
+PowerShell son infraestructura interna de las tareas y el estudiante no tiene
+que invocarlos manualmente. Use `Terminal > Run Task`, seleccione la tarea y
+lea su salida en el panel integrado.
 
 ## Resultado de la prueba mínima
 

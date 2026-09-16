@@ -54,12 +54,8 @@ flash.
 ## launch.json reproducible
 
 `.vscode/launch.example.json` solo muestra la estructura. No debe editarse con
-rutas personales. Ejecute:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\create_debug_config.ps1
-```
+rutas personales. Abra `Terminal > Run Task` y seleccione **Create Debug
+Configuration**.
 
 El script lee `tools/local_config.ps1` y crea `.vscode/launch.json`. Este último
 queda excluido de Git.

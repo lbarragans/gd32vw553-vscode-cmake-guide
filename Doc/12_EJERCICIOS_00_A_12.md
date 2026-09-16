@@ -9,8 +9,8 @@
 5. Lea `README.md`, `Doc/6_VARIANTES_DEL_EJERCICIO.md` y
    `Doc/7_PLAN_DE_VALIDACION.md`.
 6. Ejecute primero la referencia original.
-7. Ejecute Assembly con `tools/build_variant.ps1 -Variant assembly -Flash`.
-8. Ejecute FreeRTOS con `tools/build_freertos.ps1 -Clean -Flash`; el script
+7. En `Terminal > Run Task`, seleccione **Build + Flash Assembly**.
+8. En `Terminal > Run Task`, seleccione **Build + Flash FreeRTOS**; la tarea
    integra la aplicación en el MSDK V1.0.3g y usa su port GD32VW553/ECLIC.
 9. Registre compilación, flash, observación física y variables GDB por separado.
 
@@ -159,7 +159,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01 y 02 fueron compilados, programados y comprobados
+- Los ejercicios 00, 01, 02 y 03 fueron compilados, programados y comprobados
   físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se

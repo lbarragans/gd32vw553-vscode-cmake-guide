@@ -114,17 +114,14 @@ Get-ChildItem "C:\ruta\a\GD32EmbeddedBuilder" `
 
 ## 2.4 Crear la configuración privada
 
-Desde la raíz del repositorio:
-
-```powershell
-Copy-Item .\tools\local_config.example.ps1 .\tools\local_config.ps1
-notepad .\tools\local_config.ps1
-```
+En VS Code expanda `tools`, copie `local_config.example.ps1`, pegue la copia
+en la misma carpeta y renómbrela `local_config.ps1`. Ábrala en el editor.
 
 Ejemplo de forma, reemplazando todas las rutas:
 
 ```powershell
 $GD32_SDK_ROOT = "C:/ruta/GD32VW55x_Firmware_Library_V1.6.0"
+$GD32_MSDK_ROOT = "C:/GD32/GD32VW55x_RELEASE_V1.0.3g"
 $NUCLEI_TOOLCHAIN_DIR = "C:/ruta/NucleiRISCVGCC/bin"
 $OPENOCD_ROOT = "C:/ruta/OpenOCD/xpack-openocd-0.11.0-3"
 ```
@@ -133,11 +130,7 @@ Se recomiendan barras `/` dentro de las cadenas. No publique este archivo.
 
 ## 2.5 Verificar todo de una vez
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\verify_environment.ps1
-```
+En VS Code abra `Terminal > Run Task` y seleccione **Verify GD32
+Environment**.
 
-Todas las líneas deben comenzar por `[OK]`. La opción
-`-ExecutionPolicy Bypass` solo se aplica a ese proceso de PowerShell; no cambia
-permanentemente la política del sistema.
+Todas las líneas deben comenzar por `[OK]`.

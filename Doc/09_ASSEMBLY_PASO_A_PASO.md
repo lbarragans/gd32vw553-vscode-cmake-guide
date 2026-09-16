@@ -21,20 +21,11 @@ Use `.S` mayúscula. GCC aplica primero el preprocesador y después el
 ensamblador. Esto permite `#include`, símbolos y opciones comunes del proyecto.
 Un `.s` minúsculo se envía directamente al ensamblador.
 
-## 9.3 Preparar una copia de trabajo
+## 9.3 Abrir la variante sin alterar la referencia
 
-No sustituya la referencia original. Desde la raíz de un ejercicio 00–11:
-
-```powershell
-New-Item -ItemType Directory -Force .\Trabajo_Assembly | Out-Null
-Copy-Item .\Ensamblador_RISCV_Puro\main.S .\Trabajo_Assembly\main.S -Force
-```
-
-La forma recomendada es crear una rama antes de integrar:
-
-```powershell
-git switch -c laboratorio/assembly
-```
+No sustituya la referencia original. En el explorador de VS Code abra
+`Ensamblador_RISCV_Puro/main.S`; el CMake del repositorio selecciona esta
+fuente mediante la tarea Assembly y mantiene intactos los archivos de `Src/`.
 
 ## 9.4 Seleccionar el archivo en CMake
 
@@ -42,12 +33,8 @@ Los ejercicios 00–11 incorporan `APP_VARIANT=original|assembly`. El CMake
 selecciona solo una lógica de aplicación y conserva startup, sistema, drivers y
 linker script. Así se evita compilar simultáneamente dos definiciones de `main`.
 
-Para construir Assembly en modo Debug:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\build_variant.ps1 -Variant assembly
-```
+Para construir Assembly abra `Terminal > Run Task` y seleccione
+**Build + Flash Assembly**.
 
 Algunos ejercicios necesitan símbolos de infraestructura del SDK:
 
@@ -58,29 +45,12 @@ Algunos ejercicios necesitan símbolos de infraestructura del SDK:
 
 ## 9.5 Configurar y compilar
 
-Desde la raíz del ejercicio, para compilar y programar en una sola operación:
-
-```powershell
-Copy-Item .\tools\local_config.example.ps1 .\tools\local_config.ps1 -ErrorAction SilentlyContinue
-notepad .\tools\local_config.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\verify_environment.ps1
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\build_variant.ps1 -Variant assembly -Flash
-```
-
-Compruebe que el listado contiene las instrucciones esperadas:
-
-```powershell
-Select-String -Path .\build\debug\*.lst -Pattern "main:|eclic_mtip_handler:"
-```
-
-Si cambió fuentes o toolchain y CMake conserva una configuración vieja:
-
-```powershell
-Remove-Item .\build -Recurse -Force
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\configure.ps1 -BuildType Debug
-cmake --build --preset build-debug
-```
+1. Prepare `local_config.ps1` desde el explorador según el capítulo 11.
+2. Abra `Terminal > Run Task`.
+3. Seleccione **Verify GD32 Environment**.
+4. Seleccione **Build + Flash Assembly**.
+5. Abra `build/debug/GD32VW55x.lst` desde el explorador para comprobar las
+   instrucciones y símbolos esperados.
 
 ## 9.6 Programar y ejecutar
 
@@ -89,11 +59,7 @@ cmake --build --preset build-debug
 3. Conecte las señales JTAG indicadas por el esquema de la placa.
 4. Use niveles de 3,3 V; no inyecte 5 V en JTAG.
 5. Conecte el probe al PC y alimente la placa.
-6. Ejecute:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\flash.ps1 -BuildType Debug
-```
+6. En `Terminal > Run Task`, seleccione **Build + Flash Assembly**.
 
 El éxito requiere las tres ideas siguientes en la salida:
 
@@ -105,13 +71,8 @@ Resetting Target
 
 ## 9.7 Depurar Assembly en VS Code
 
-Genere la configuración una sola vez:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\create_debug_config.ps1
-```
-
-Después:
+Genere la configuración una sola vez seleccionando **Create Debug
+Configuration** en `Terminal > Run Task`. Después:
 
 1. abra `Ensamblador_RISCV_Puro/main.S`;
 2. coloque un breakpoint en una instrucción real, no en un comentario o label;

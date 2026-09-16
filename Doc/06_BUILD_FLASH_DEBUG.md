@@ -16,10 +16,9 @@ flowchart TD
 
 ## 6.1 Configurar
 
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\configure.ps1 -BuildType Debug
-```
+1. En VS Code abra `Terminal > Run Task`.
+2. Seleccione **Configure GD32 Debug**.
+3. Espere a que la tarea termine.
 
 Resultado esperado:
 
@@ -31,28 +30,21 @@ Resultado esperado:
 
 ## 6.2 Compilar
 
-```powershell
-cmake --build --preset build-debug
-```
+1. Abra `Terminal > Run Task`.
+2. Seleccione **Build GD32 Debug**.
+3. Observe la salida en el panel integrado.
 
 La primera compilación procesa todos los archivos. Si no cambió nada, Ninja
 responde `no work to do`; eso es correcto. Después de modificar y guardar
 `Src/main.c`, debe recompilar al menos ese archivo y volver a enlazar.
 
-Para confirmar los resultados:
-
-```powershell
-Get-ChildItem .\build\debug\GD32VW55x.*
-```
+Para confirmar los resultados, expanda `build/debug` en el explorador de VS
+Code y localice `GD32VW55x.elf`, `.hex`, `.bin`, `.map` y `.lst`.
 
 ## 6.3 Programar
 
-Conecte WCH-Link/CMSIS-DAP al PC y a JTAG de la placa. Después ejecute:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\flash.ps1 -BuildType Debug
-```
+Conecte WCH-Link/CMSIS-DAP al PC y a JTAG de la placa. Abra
+`Terminal > Run Task` y seleccione **Flash GD32 Debug**.
 
 La configuración validada físicamente con WCH-Link CMSIS-DAP v2 es:
 
@@ -94,12 +86,8 @@ Para demostrar que VS Code recompila y programa el cambio:
 
 ## 6.5 Crear la configuración de depuración
 
-Ejecute una vez por computador/proyecto:
-
-```powershell
-powershell -NoProfile -ExecutionPolicy Bypass `
-  -File .\tools\create_debug_config.ps1
-```
+Abra `Terminal > Run Task` y seleccione **Create Debug Configuration** una vez
+por computador/proyecto.
 
 Esto genera `.vscode/launch.json` con GDB, OpenOCD y sus scripts.
 
