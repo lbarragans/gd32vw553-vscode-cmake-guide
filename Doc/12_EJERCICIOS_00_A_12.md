@@ -88,8 +88,9 @@
 - **Assembly:** una tabla guarda periodo, próxima liberación y ejecuciones; el
   dispatcher invoca tareas vencidas.
 - **FreeRTOS:** tres tareas independientes usan `vTaskDelayUntil`.
-- **Prueba:** en 10 s deben verse proporciones coherentes con 100, 1000 y
-  5000 ms, además de los patrones de dos/tres pulsos.
+- **Prueba:** observe dos pulsos por segundo durante 5 segundos y luego tres
+  pulsos por segundo durante 5 segundos. Confirme al menos dos cambios:
+  `2 -> 3 -> 2 -> 3`.
 
 ### 07 — Ring buffer productor/consumidor
 
@@ -161,7 +162,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04 y 05 fueron compilados, programados y comprobados
+- Los ejercicios 00, 01, 02, 03, 04, 05 y 06 fueron compilados, programados y comprobados
   físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
