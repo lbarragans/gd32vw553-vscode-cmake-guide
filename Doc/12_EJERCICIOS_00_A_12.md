@@ -9,9 +9,9 @@
 5. Lea `README.md`, `Doc/6_VARIANTES_DEL_EJERCICIO.md` y
    `Doc/7_PLAN_DE_VALIDACION.md`.
 6. Ejecute primero la referencia original.
-7. Integre Assembly siguiendo el capítulo 9.
-8. Copie `FreeRTOS_Puro/` al MSDK V1.0.3g siguiendo el capítulo 10; el port
-   GD32VW553/ECLIC proviene del SDK oficial.
+7. Ejecute Assembly con `tools/build_variant.ps1 -Variant assembly -Flash`.
+8. Ejecute FreeRTOS con `tools/build_freertos.ps1 -Clean -Flash`; el script
+   integra la aplicación en el MSDK V1.0.3g y usa su port GD32VW553/ECLIC.
 9. Registre compilación, flash, observación física y variables GDB por separado.
 
 ## Mapa académico y evidencia esperada
@@ -159,6 +159,8 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
+- Los ejercicios 00, 01 y 02 fueron compilados, programados y comprobados
+  físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
   construyen con `tools/build_variant.ps1`.
