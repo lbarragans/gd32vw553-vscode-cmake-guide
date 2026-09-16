@@ -105,11 +105,50 @@
 
 ### 08 — Recuperación de excepción
 
-- **Assembly:** provoca `c.unimp`, captura `mcause/mepc/mtval`, determina que la
-  instrucción mide 16 bits y corrige el `mepc` guardado.
-- **FreeRTOS:** la excepción ocurre en el contexto de una tarea; la notificación
-  solo se envía después de regresar normalmente.
-- **Prueba:** el código posterior al trap se ejecuta y aparecen tres pulsos.
+- **Referencia:** provoca deliberadamente `c.unimp` (`0x0000`), entra por la
+  infraestructura de excepciones del SDK, comprueba causa 2 y corrige el
+  `mepc` guardado antes de regresar.
+- **Assembly:** captura `mcause`, `mepc` y `mtval`, reconoce que la instrucción
+  mide 16 bits y suma dos al `mepc` de la trama oficial.
+- **FreeRTOS:** `test_task` arma la prueba y ejecuta `c.unimp`. Una entrada
+  mínima `exc_entry`, escrita con Assembly embebido, conserva sus registros
+  temporales, comprueba causa 2, avanza el CSR `mepc` dos bytes y retorna con
+  `mret`. Solo después del retorno normal se notifica a `indicator_task`.
+- **Prueba:** en las tres variantes deben aparecer tres destellos cortos,
+  seguidos por una pausa larga; el patrón se repite.
+
+#### Ejecución manual en VS Code
+
+1. Abra exclusivamente la carpeta `08_RISCV_Exception_Recovery` mediante
+   **File > Open Folder**.
+2. Abra `tools/local_config.ps1` y confirme las rutas del SDK V1.0.3g,
+   toolchain Nuclei y OpenOCD.
+3. Seleccione **Terminal > Run Task > Verify GD32 Environment**.
+4. Seleccione **Terminal > Run Task > Build + Flash Original** y confirme los
+   tres destellos con pausa.
+5. Seleccione **Terminal > Run Task > Build + Flash Assembly** y repita la
+   observación.
+6. Seleccione **Terminal > Run Task > Build + Flash FreeRTOS**. Esta tarea
+   limpia el MSDK compartido, copia `main.c` y `app_cfg.h`, compila MBL/MSDK,
+   crea `image-all.bin` y lo programa desde `0x08000000`.
+7. Compruebe en la salida `Programming Finished`, `Verified OK` y
+   `Resetting Target`; después confirme el mismo patrón físico.
+
+#### Qué debe observarse al depurar
+
+| Símbolo | Valor correcto |
+| --- | ---: |
+| `g_exception_count` | `1` |
+| `g_last_mcause & 0xFFF` | `2` |
+| `g_last_instruction` | `0x0000` |
+| `g_instruction_length` | `2` |
+| `g_recovery_count` | `1` |
+| `g_test_armed` | `0` |
+| `g_test_completed` | `1` |
+| `g_unexpected_exception` | `0` |
+
+No llame APIs de FreeRTOS dentro de `exc_entry`. La notificación pertenece al
+contexto normal de la tarea, después de ejecutar `mret`.
 
 ### 09 — Parser UART con CRC-8
 
@@ -164,8 +203,9 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04, 05, 06 y 07 fueron compilados, programados y comprobados
-  físicamente en las tres variantes desde VS Code con WCH-Link.
+- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07 y 08 fueron compilados,
+  programados y comprobados físicamente en las tres variantes desde VS Code
+  con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
   construyen con `tools/build_variant.ps1`.
