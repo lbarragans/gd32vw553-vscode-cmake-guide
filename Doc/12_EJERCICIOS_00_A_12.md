@@ -99,7 +99,9 @@
 - **FreeRTOS:** una Queue de ocho reemplaza el buffer manual; tareas separan
   producción, consumo, fases e indicador.
 - **Prueba:** orden monotónico y comportamiento distinto en equilibrio,
-  sobrecarga y drenaje.
+  sobrecarga y drenaje. En la placa validada PC13 es activo en alto: queda
+  apagado con la cola vacia, encendido con ocupacion parcial y parpadea cuando
+  la cola esta llena.
 
 ### 08 — Recuperación de excepción
 
@@ -162,7 +164,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04, 05 y 06 fueron compilados, programados y comprobados
+- Los ejercicios 00, 01, 02, 03, 04, 05, 06 y 07 fueron compilados, programados y comprobados
   físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
