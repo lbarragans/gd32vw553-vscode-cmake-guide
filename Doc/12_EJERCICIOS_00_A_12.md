@@ -159,7 +159,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02 y 03 fueron compilados, programados y comprobados
+- Los ejercicios 00, 01, 02, 03 y 04 fueron compilados, programados y comprobados
   físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
