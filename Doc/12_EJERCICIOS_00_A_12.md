@@ -79,7 +79,9 @@
 - **Assembly:** la ISR publica bits mediante `amoor.w.aqrl`; el bucle los toma
   y limpia con `amoswap.w.aqrl` sin perder actualizaciones concurrentes.
 - **FreeRTOS:** Event Groups expresan la misma publicación/espera.
-- **Prueba:** contabilice correctamente eventos de 250, 1000 y 5000 ms.
+- **Prueba:** confirme cinco segundos de conmutacion lenta (cada 500 ms),
+  seguidos por cinco segundos de conmutacion rapida (cada 250 ms). El ciclo se
+  repite; las banderas internas conservan periodos de 250, 1000 y 5000 ms.
 
 ### 06 — Planificador cooperativo
 
@@ -159,7 +161,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03 y 04 fueron compilados, programados y comprobados
+- Los ejercicios 00, 01, 02, 03, 04 y 05 fueron compilados, programados y comprobados
   físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
