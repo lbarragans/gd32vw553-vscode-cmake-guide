@@ -62,7 +62,9 @@ Si este repositorio se usa como manual del curso, siga en orden:
 La guía distingue deliberadamente entre **fuente preparada**, **firmware que
 compila** y **variante validada en placa**. Las carpetas FreeRTOS de 00–12 se
 integran como aplicaciones del MSDK V1.0.3g para reutilizar el port
-GD32VW553/ECLIC oficial. La validación física final se registra por ejercicio.
+GD32VW553/ECLIC oficial. Los ejercicios 00–11 ya tienen validación física de
+Original, Assembly y FreeRTOS registrada; la validación final se conserva por
+ejercicio.
 
 ## Operación sin escribir comandos
 

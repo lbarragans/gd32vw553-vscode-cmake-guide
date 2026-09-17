@@ -170,3 +170,13 @@ valor cada código ACK/NACK a la Queue del indicador. La Queue separa el tiempo
 del protocolo simulado del tiempo de los pulsos del LED. Esta arquitectura no
 convierte el simulador en un periférico I2C físico: no existen ISR de I2C ni
 formas de onda SDA/SCL en esta variante.
+
+En el ejercicio 11 validado, `auth_task` ejecuta cinco casos reproducibles y
+envía estructuras de resultado por valor a `indicator_task`. La Queue separa
+el cálculo y la decisión de autenticación del tiempo empleado para mostrar los
+pulsos del LED. Además de `main.c` y `app_cfg.h`, la tarea de construcción debe
+copiar `sha256.c` y `sha256.h` a `MSDK/app`, actualizar sus fechas y limpiar el
+build compartido; de lo contrario, CMake puede reutilizar un objeto anterior o
+no registrar el módulo nuevo. La prueba confirmó dos aceptaciones y tres
+rechazos por ciclo. Es una simulación didáctica: la clave permanece en Flash y
+no dispone de las protecciones físicas de un elemento seguro real.

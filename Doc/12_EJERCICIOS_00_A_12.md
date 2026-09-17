@@ -263,12 +263,64 @@ pines, resistencias pull-up, frecuencia, tiempos y analizador lógico.
 
 ### 11 — Secure element simulado
 
-- **Assembly:** challenges, anti-replay, comparación acumulativa y HMAC-SHA256
-  fijo de clave/mensaje de 32 bytes.
-- **FreeRTOS:** tarea de autenticación y Queue de resultados; reutiliza
-  `Src/sha256.c` como primitiva auditada.
-- **Prueba:** cinco casos, rechazo de replay y patrón visual. No presente el
-  HMAC Assembly pedagógico como biblioteca criptográfica general.
+- **Referencia:** un elemento seguro simulado conserva una clave, calcula
+  HMAC-SHA256 sobre challenges de 32 bytes y un verificador comprueba la
+  respuesta y evita reutilizar un challenge aceptado.
+- **Assembly:** implementa challenges, comparación acumulativa, anti-replay y
+  HMAC-SHA256 para clave y mensaje de 32 bytes. `sha256_fixed.S` contiene la
+  primitiva especializada que usa esta práctica.
+- **FreeRTOS:** `auth_task` ejecuta las cinco pruebas y envía por valor cada
+  resultado a una Queue; `indicator_task` consume la Queue y produce la
+  evidencia visual. La aplicación copia también `sha256.c` y `sha256.h` al
+  MSDK antes de compilar.
+
+#### Secuencia de prueba y patrón visual
+
+| Paso | Caso | Resultado | LED PC13 |
+| ---: | --- | --- | --- |
+| 0 | challenge y respuesta válidos | aceptado | dos destellos cortos |
+| 1 | challenge alterado | rechazado por MAC | un destello largo |
+| 2 | MAC alterado | rechazado por MAC | un destello largo |
+| 3 | segundo par válido | aceptado | dos destellos cortos |
+| 4 | replay del segundo challenge | rechazado | un destello largo |
+
+Por ciclo deben verse dos grupos de aceptación y tres grupos de rechazo,
+seguidos por una pausa. Los contadores esperados son: dos aceptaciones, tres
+rechazos, dos fallas MAC, un replay, tres respuestas HMAC generadas y cinco
+verificaciones.
+
+#### Ejecución manual en VS Code
+
+1. Abra únicamente `11_Secure_Element_Challenge_Response` mediante **File >
+   Open Folder**. No abra la carpeta que contiene todos los ejercicios.
+2. Abra `tools/local_config.ps1` y confirme las rutas del SDK bare-metal, MSDK
+   V1.0.3g, toolchain Nuclei y OpenOCD.
+3. Seleccione **Terminal > Run Task > Verify GD32 Environment**. Corrija toda
+   ruta marcada como ausente antes de continuar.
+4. Conecte y alimente la placa. Confirme que Windows reconoce **WCH CMSIS-DAP**
+   y que ninguna otra aplicación está usando el depurador.
+5. Seleccione **Terminal > Run Task > Build + Flash Original**. En la salida
+   deben aparecer `Programming Finished`, `Verified OK` y `Resetting Target`.
+   Observe un ciclo completo del patrón.
+6. Seleccione **Terminal > Run Task > Build + Flash Assembly** y compruebe la
+   misma secuencia. La tarea selecciona `main.S` y `sha256_fixed.S`; no debe
+   enlazar simultáneamente `Src/main.c`.
+7. Seleccione **Terminal > Run Task > Build + Flash FreeRTOS**. La tarea
+   respalda temporalmente `MSDK/app`, copia `main.c`, `app_cfg.h`, `sha256.c`
+   y `sha256.h`, actualiza sus fechas, limpia el build compartido, compila MBL
+   y MSDK, y programa `scripts/images/image-all.bin` desde `0x08000000`.
+8. Confirme nuevamente la secuencia completa y registre variante, commit,
+   compilación, verificación del flash y evidencia física.
+
+#### Qué demuestra y qué no demuestra
+
+La comparación acumulativa evita terminar al encontrar el primer byte
+diferente y reduce una fuga temporal obvia. El registro del último challenge
+aceptado permite demostrar el rechazo de replay. Sin embargo, la clave continúa
+almacenada en Flash normal: no hay memoria segura, borrado protegido, defensa
+contra lectura, canales laterales ni manipulación física. Use esta práctica
+para estudiar el protocolo; no la presente como un elemento seguro comercial
+ni reutilice la rutina Assembly como biblioteca criptográfica general.
 
 ### 12 — Control HTTP por WiFi
 
@@ -298,7 +350,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07, 08, 09 y 10 fueron compilados,
+- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10 y 11 fueron compilados,
   programados y comprobados físicamente en las tres variantes desde VS Code
   con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
