@@ -79,18 +79,15 @@
 - **Assembly:** la ISR publica bits mediante `amoor.w.aqrl`; el bucle los toma
   y limpia con `amoswap.w.aqrl` sin perder actualizaciones concurrentes.
 - **FreeRTOS:** Event Groups expresan la misma publicación/espera.
-- **Prueba:** confirme cinco segundos de conmutacion lenta (cada 500 ms),
-  seguidos por cinco segundos de conmutacion rapida (cada 250 ms). El ciclo se
-  repite; las banderas internas conservan periodos de 250, 1000 y 5000 ms.
+- **Prueba:** contabilice correctamente eventos de 250, 1000 y 5000 ms.
 
 ### 06 — Planificador cooperativo
 
 - **Assembly:** una tabla guarda periodo, próxima liberación y ejecuciones; el
   dispatcher invoca tareas vencidas.
 - **FreeRTOS:** tres tareas independientes usan `vTaskDelayUntil`.
-- **Prueba:** observe dos pulsos por segundo durante 5 segundos y luego tres
-  pulsos por segundo durante 5 segundos. Confirme al menos dos cambios:
-  `2 -> 3 -> 2 -> 3`.
+- **Prueba:** en 10 s deben verse proporciones coherentes con 100, 1000 y
+  5000 ms, además de los patrones de dos/tres pulsos.
 
 ### 07 — Ring buffer productor/consumidor
 
@@ -99,236 +96,50 @@
 - **FreeRTOS:** una Queue de ocho reemplaza el buffer manual; tareas separan
   producción, consumo, fases e indicador.
 - **Prueba:** orden monotónico y comportamiento distinto en equilibrio,
-  sobrecarga y drenaje. En la placa validada PC13 es activo en alto: queda
-  apagado con la cola vacia, encendido con ocupacion parcial y parpadea cuando
-  la cola esta llena.
+  sobrecarga y drenaje.
 
 ### 08 — Recuperación de excepción
 
-- **Referencia:** provoca deliberadamente `c.unimp` (`0x0000`), entra por la
-  infraestructura de excepciones del SDK, comprueba causa 2 y corrige el
-  `mepc` guardado antes de regresar.
-- **Assembly:** captura `mcause`, `mepc` y `mtval`, reconoce que la instrucción
-  mide 16 bits y suma dos al `mepc` de la trama oficial.
-- **FreeRTOS:** `test_task` arma la prueba y ejecuta `c.unimp`. Una entrada
-  mínima `exc_entry`, escrita con Assembly embebido, conserva sus registros
-  temporales, comprueba causa 2, avanza el CSR `mepc` dos bytes y retorna con
-  `mret`. Solo después del retorno normal se notifica a `indicator_task`.
-- **Prueba:** en las tres variantes deben aparecer tres destellos cortos,
-  seguidos por una pausa larga; el patrón se repite.
-
-#### Ejecución manual en VS Code
-
-1. Abra exclusivamente la carpeta `08_RISCV_Exception_Recovery` mediante
-   **File > Open Folder**.
-2. Abra `tools/local_config.ps1` y confirme las rutas del SDK V1.0.3g,
-   toolchain Nuclei y OpenOCD.
-3. Seleccione **Terminal > Run Task > Verify GD32 Environment**.
-4. Seleccione **Terminal > Run Task > Build + Flash Original** y confirme los
-   tres destellos con pausa.
-5. Seleccione **Terminal > Run Task > Build + Flash Assembly** y repita la
-   observación.
-6. Seleccione **Terminal > Run Task > Build + Flash FreeRTOS**. Esta tarea
-   limpia el MSDK compartido, copia `main.c` y `app_cfg.h`, compila MBL/MSDK,
-   crea `image-all.bin` y lo programa desde `0x08000000`.
-7. Compruebe en la salida `Programming Finished`, `Verified OK` y
-   `Resetting Target`; después confirme el mismo patrón físico.
-
-#### Qué debe observarse al depurar
-
-| Símbolo | Valor correcto |
-| --- | ---: |
-| `g_exception_count` | `1` |
-| `g_last_mcause & 0xFFF` | `2` |
-| `g_last_instruction` | `0x0000` |
-| `g_instruction_length` | `2` |
-| `g_recovery_count` | `1` |
-| `g_test_armed` | `0` |
-| `g_test_completed` | `1` |
-| `g_unexpected_exception` | `0` |
-
-No llame APIs de FreeRTOS dentro de `exc_entry`. La notificación pertenece al
-contexto normal de la tarea, después de ejecutar `mret`.
+- **Assembly:** provoca `c.unimp`, captura `mcause/mepc/mtval`, determina que la
+  instrucción mide 16 bits y corrige el `mepc` guardado.
+- **FreeRTOS:** la excepción ocurre en el contexto de una tarea; la notificación
+  solo se envía después de regresar normalmente.
+- **Prueba:** el código posterior al trap se ejecuta y aparecen tres pulsos.
 
 ### 09 — Parser UART con CRC-8
 
-- **Referencia:** una FIFO circular recibe el flujo simulado y alimenta una FSM
-  con estados `WAIT_SOF`, `READ_LENGTH`, `READ_COMMAND`, `READ_PAYLOAD` y
-  `READ_CRC`.
-- **Assembly:** implementa FIFO, FSM y CRC-8/ATM con polinomio `0x07`; conserva
-  la última trama válida y contabiliza ruido, overflow y rechazos.
-- **FreeRTOS:** `producer_task` envía bytes a una Queue RX, `parser_task`
-  ejecuta la FSM y una Queue de eventos desacopla `indicator_task`.
-- **Prueba:** el flujo contiene dos bytes de ruido, dos tramas válidas, una
-  trama con CRC alterado y una longitud inválida.
-
-#### Formato y resultados
-
-```text
-SOF(0xA5) | LEN(0..8) | CMD | PAYLOAD | CRC-8
-```
-
-El CRC cubre `LEN + CMD + PAYLOAD`; no incluye `SOF`. Usa valor inicial
-`0x00`, polinomio `0x07`, sin reflexión y sin XOR final.
-
-| Caso | Resultado visible |
-| --- | --- |
-| trama válida `CMD=0x10` | dos destellos cortos |
-| CRC alterado en `CMD=0x20` | un destello largo |
-| longitud `0xFF` | un destello largo |
-| trama válida `CMD=0x30` | dos destellos cortos |
-| fin del ciclo | pausa y repetición |
-
-#### Ejecución manual en VS Code
-
-1. Abra únicamente `09_UART_Frame_Parser_CRC8` mediante **File > Open
-   Folder**.
-2. Revise `tools/local_config.ps1` y confirme las rutas del SDK bare-metal,
-   MSDK V1.0.3g, toolchain Nuclei y OpenOCD.
-3. Seleccione **Terminal > Run Task > Verify GD32 Environment**.
-4. Ejecute **Build + Flash Original** y observe un ciclo completo.
-5. Ejecute **Build + Flash Assembly** y confirme la misma secuencia.
-6. Ejecute **Build + Flash FreeRTOS**. La tarea limpia el MSDK compartido,
-   copia la aplicación, compila MBL/MSDK y programa `image-all.bin`.
-7. Confirme `Programming Finished`, `Verified OK` y `Resetting Target` en la
-   terminal integrada.
-
-#### Variables de comprobación
-
-| Variable | Incremento esperado por ciclo |
-| --- | ---: |
-| `g_frames_accepted` | `2` |
-| `g_frames_rejected` | `2` |
-| `g_crc_errors` | `1` |
-| `g_length_errors` | `1` |
-| `g_noise_bytes` | `2` |
-| `g_rx_overflows` | `0` |
-
-La última trama válida debe conservar `CMD=0x30`, `LEN=3` y payload
-`01 02 03`. Esta comprobación valida el parser con productor simulado. Para
-usar UART física, reemplace el productor por una ISR que publique con
-`xQueueSendFromISR`; esa ruta requiere una validación independiente.
+- **Assembly:** una FIFO alimenta la FSM `WAIT_SOF` a `READ_CRC`; se conserva
+  la última trama válida.
+- **FreeRTOS:** Queue RX, tarea parser y Queue de eventos separan las etapas.
+- **Prueba:** dos tramas válidas y una CRC alterada; para UART física cambie el
+  productor simulado por ISR con API `FromISR`.
 
 ### 10 — Mapa de registros I2C virtual
 
-- **Referencia:** modela un sensor de dirección `0x42` con siete registros,
-  puntero interno y transacciones START/repeated START/STOP.
-- **Assembly:** implementa dirección, registro seleccionado, datos big-endian,
-  repeated START, ACK y causas NACK completamente en RV32.
-- **FreeRTOS:** `script_task` ejecuta las seis operaciones y una Queue envía
-  cada resultado a `indicator_task` sin bloquear la lógica del dispositivo.
-
-#### Guion automático
-
-| Paso | Operación | Resultado |
-| ---: | --- | --- |
-| 0 | leer `WHO_AM_I` | ACK, `0x53` |
-| 1 | escribir `CONFIG=1` | ACK |
-| 2 | tomar muestra y leer temperatura | ACK, dos bytes |
-| 3 | usar dirección `0x43` | NACK de dirección |
-| 4 | seleccionar registro `0xFE` | NACK de registro |
-| 5 | leer contador de muestras | ACK, dos bytes |
-
-Dos destellos cortos representan ACK; un destello largo representa NACK. Por
-ciclo se observan cuatro grupos ACK, dos NACK y una pausa.
-
-#### Ejecución manual en VS Code
-
-1. Abra únicamente `10_I2C_Register_Map_Simulator` con **File > Open Folder**.
-2. Revise `tools/local_config.ps1` y confirme SDK bare-metal, MSDK V1.0.3g,
-   toolchain Nuclei y OpenOCD.
-3. Ejecute **Terminal > Run Task > Verify GD32 Environment**.
-4. Ejecute **Build + Flash Original** y observe un ciclo completo.
-5. Ejecute **Build + Flash Assembly** y confirme la misma secuencia.
-6. Ejecute **Build + Flash FreeRTOS**. La tarea limpia el MSDK compartido,
-   copia la aplicación, compila MBL/MSDK y programa `image-all.bin`.
-7. Compruebe `Programming Finished`, `Verified OK` y `Resetting Target`.
-
-#### Valores que deben verificarse
-
-| Evidencia por ciclo | Valor |
-| --- | ---: |
-| transacciones correctas | `4` |
-| NACK esperados | `2` |
-| START totales | `9` |
-| repeated START | `3` |
-| bytes escritos | `5` |
-| bytes leídos | `5` |
-| `WHO_AM_I` | `0x53` |
-| `CONFIG` | `1` |
-
-Esta práctica valida el mapa de registros y las decisiones de protocolo. No
-genera ni mide señales eléctricas SDA/SCL. Una validación I2C física requiere
-pines, resistencias pull-up, frecuencia, tiempos y analizador lógico.
+- **Assembly:** implementa direcciones, registro seleccionado, datos
+  big-endian, repeated START, ACK y causas NACK.
+- **FreeRTOS:** una tarea ejecuta el guion y envía resultados a la indicadora.
+- **Prueba:** seis transacciones y coherencia de siete registros. Es una
+  simulación de protocolo, no señales eléctricas SDA/SCL.
 
 ### 11 — Secure element simulado
 
-- **Referencia:** un elemento seguro simulado conserva una clave, calcula
-  HMAC-SHA256 sobre challenges de 32 bytes y un verificador comprueba la
-  respuesta y evita reutilizar un challenge aceptado.
-- **Assembly:** implementa challenges, comparación acumulativa, anti-replay y
-  HMAC-SHA256 para clave y mensaje de 32 bytes. `sha256_fixed.S` contiene la
-  primitiva especializada que usa esta práctica.
-- **FreeRTOS:** `auth_task` ejecuta las cinco pruebas y envía por valor cada
-  resultado a una Queue; `indicator_task` consume la Queue y produce la
-  evidencia visual. La aplicación copia también `sha256.c` y `sha256.h` al
-  MSDK antes de compilar.
-
-#### Secuencia de prueba y patrón visual
-
-| Paso | Caso | Resultado | LED PC13 |
-| ---: | --- | --- | --- |
-| 0 | challenge y respuesta válidos | aceptado | dos destellos cortos |
-| 1 | challenge alterado | rechazado por MAC | un destello largo |
-| 2 | MAC alterado | rechazado por MAC | un destello largo |
-| 3 | segundo par válido | aceptado | dos destellos cortos |
-| 4 | replay del segundo challenge | rechazado | un destello largo |
-
-Por ciclo deben verse dos grupos de aceptación y tres grupos de rechazo,
-seguidos por una pausa. Los contadores esperados son: dos aceptaciones, tres
-rechazos, dos fallas MAC, un replay, tres respuestas HMAC generadas y cinco
-verificaciones.
-
-#### Ejecución manual en VS Code
-
-1. Abra únicamente `11_Secure_Element_Challenge_Response` mediante **File >
-   Open Folder**. No abra la carpeta que contiene todos los ejercicios.
-2. Abra `tools/local_config.ps1` y confirme las rutas del SDK bare-metal, MSDK
-   V1.0.3g, toolchain Nuclei y OpenOCD.
-3. Seleccione **Terminal > Run Task > Verify GD32 Environment**. Corrija toda
-   ruta marcada como ausente antes de continuar.
-4. Conecte y alimente la placa. Confirme que Windows reconoce **WCH CMSIS-DAP**
-   y que ninguna otra aplicación está usando el depurador.
-5. Seleccione **Terminal > Run Task > Build + Flash Original**. En la salida
-   deben aparecer `Programming Finished`, `Verified OK` y `Resetting Target`.
-   Observe un ciclo completo del patrón.
-6. Seleccione **Terminal > Run Task > Build + Flash Assembly** y compruebe la
-   misma secuencia. La tarea selecciona `main.S` y `sha256_fixed.S`; no debe
-   enlazar simultáneamente `Src/main.c`.
-7. Seleccione **Terminal > Run Task > Build + Flash FreeRTOS**. La tarea
-   respalda temporalmente `MSDK/app`, copia `main.c`, `app_cfg.h`, `sha256.c`
-   y `sha256.h`, actualiza sus fechas, limpia el build compartido, compila MBL
-   y MSDK, y programa `scripts/images/image-all.bin` desde `0x08000000`.
-8. Confirme nuevamente la secuencia completa y registre variante, commit,
-   compilación, verificación del flash y evidencia física.
-
-#### Qué demuestra y qué no demuestra
-
-La comparación acumulativa evita terminar al encontrar el primer byte
-diferente y reduce una fuga temporal obvia. El registro del último challenge
-aceptado permite demostrar el rechazo de replay. Sin embargo, la clave continúa
-almacenada en Flash normal: no hay memoria segura, borrado protegido, defensa
-contra lectura, canales laterales ni manipulación física. Use esta práctica
-para estudiar el protocolo; no la presente como un elemento seguro comercial
-ni reutilice la rutina Assembly como biblioteca criptográfica general.
+- **Assembly:** challenges, anti-replay, comparación acumulativa y HMAC-SHA256
+  fijo de clave/mensaje de 32 bytes.
+- **FreeRTOS:** tarea de autenticación y Queue de resultados; reutiliza
+  `Src/sha256.c` como primitiva auditada.
+- **Prueba:** cinco casos, rechazo de replay y patrón visual. No presente el
+  HMAC Assembly pedagógico como biblioteca criptográfica general.
 
 ### 12 — Control HTTP por WiFi
 
 - **Assembly:** seis solicitudes locales verifican parser, modos y PC13; no
-  implementa radio ni red.
-- **FreeRTOS:** el MSDK oficial ejecuta tareas WiFi/HTTP y LED sobre lwIP.
-- **Prueba:** SoftAP `GD32_LED_LAB`, IP `192.168.237.1`, seis endpoints,
-  respuestas HTTP 200 y cambio físico del LED.
+  implementa radio ni red. Compilación, programación y patrón LED comprobados.
+- **Original WiFi:** el MSDK oficial ejecuta tareas WiFi/HTTP y LED sobre lwIP.
+  Se comprobaron SoftAP `GD32_LED_LAB`, IP `192.168.237.1`, respuestas HTTP
+  200, panel local y cambio físico del LED.
+- **FreeRTOS:** la compilación completa está comprobada; la validación física
+  queda pendiente y no se debe presentar todavía como funcional en placa.
 
 ## Orden recomendado dentro de cada ejercicio
 
@@ -350,15 +161,16 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07, 08, 09, 10 y 11 fueron compilados,
-  programados y comprobados físicamente en las tres variantes desde VS Code
-  con WCH-Link.
+- Los ejercicios 00, 01, 02, 03 y 04 fueron compilados, programados y comprobados
+  físicamente en las tres variantes desde VS Code con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
 - Los Assembly de 00–11 se seleccionan con `APP_VARIANT=assembly` y se
   construyen con `tools/build_variant.ps1`.
 - Los FreeRTOS de 00–12 son aplicaciones del MSDK oficial V1.0.3g.
 - La prueba física de cada variante debe registrarse sobre la placa real.
 - El Assembly de 12 no implementa radio ni TCP; valida la capa de aplicación.
+- En el ejercicio 12, Original WiFi y Assembly tienen prueba física; FreeRTOS
+  solo tiene compilación completa confirmada a fecha 17-09-2026.
 
 ## Hoja de registro sugerida
 
