@@ -164,3 +164,9 @@ eventos transporta resultados, no punteros a variables locales. El productor
 simulado permite probar de forma repetible FIFO, FSM y CRC sin cable UART. Una
 ISR física deberá usar `xQueueSendFromISR` y la macro de cambio de contexto del
 port; no debe llamar la versión normal de `xQueueSend` desde la ISR.
+
+En el ejercicio 10 validado, una tarea ejecuta el guion I2C virtual y envía por
+valor cada código ACK/NACK a la Queue del indicador. La Queue separa el tiempo
+del protocolo simulado del tiempo de los pulsos del LED. Esta arquitectura no
+convierte el simulador en un periférico I2C físico: no existen ISR de I2C ni
+formas de onda SDA/SCL en esta variante.

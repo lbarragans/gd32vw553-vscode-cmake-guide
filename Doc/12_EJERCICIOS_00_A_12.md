@@ -211,11 +211,55 @@ usar UART física, reemplace el productor por una ISR que publique con
 
 ### 10 — Mapa de registros I2C virtual
 
-- **Assembly:** implementa direcciones, registro seleccionado, datos
-  big-endian, repeated START, ACK y causas NACK.
-- **FreeRTOS:** una tarea ejecuta el guion y envía resultados a la indicadora.
-- **Prueba:** seis transacciones y coherencia de siete registros. Es una
-  simulación de protocolo, no señales eléctricas SDA/SCL.
+- **Referencia:** modela un sensor de dirección `0x42` con siete registros,
+  puntero interno y transacciones START/repeated START/STOP.
+- **Assembly:** implementa dirección, registro seleccionado, datos big-endian,
+  repeated START, ACK y causas NACK completamente en RV32.
+- **FreeRTOS:** `script_task` ejecuta las seis operaciones y una Queue envía
+  cada resultado a `indicator_task` sin bloquear la lógica del dispositivo.
+
+#### Guion automático
+
+| Paso | Operación | Resultado |
+| ---: | --- | --- |
+| 0 | leer `WHO_AM_I` | ACK, `0x53` |
+| 1 | escribir `CONFIG=1` | ACK |
+| 2 | tomar muestra y leer temperatura | ACK, dos bytes |
+| 3 | usar dirección `0x43` | NACK de dirección |
+| 4 | seleccionar registro `0xFE` | NACK de registro |
+| 5 | leer contador de muestras | ACK, dos bytes |
+
+Dos destellos cortos representan ACK; un destello largo representa NACK. Por
+ciclo se observan cuatro grupos ACK, dos NACK y una pausa.
+
+#### Ejecución manual en VS Code
+
+1. Abra únicamente `10_I2C_Register_Map_Simulator` con **File > Open Folder**.
+2. Revise `tools/local_config.ps1` y confirme SDK bare-metal, MSDK V1.0.3g,
+   toolchain Nuclei y OpenOCD.
+3. Ejecute **Terminal > Run Task > Verify GD32 Environment**.
+4. Ejecute **Build + Flash Original** y observe un ciclo completo.
+5. Ejecute **Build + Flash Assembly** y confirme la misma secuencia.
+6. Ejecute **Build + Flash FreeRTOS**. La tarea limpia el MSDK compartido,
+   copia la aplicación, compila MBL/MSDK y programa `image-all.bin`.
+7. Compruebe `Programming Finished`, `Verified OK` y `Resetting Target`.
+
+#### Valores que deben verificarse
+
+| Evidencia por ciclo | Valor |
+| --- | ---: |
+| transacciones correctas | `4` |
+| NACK esperados | `2` |
+| START totales | `9` |
+| repeated START | `3` |
+| bytes escritos | `5` |
+| bytes leídos | `5` |
+| `WHO_AM_I` | `0x53` |
+| `CONFIG` | `1` |
+
+Esta práctica valida el mapa de registros y las decisiones de protocolo. No
+genera ni mide señales eléctricas SDA/SCL. Una validación I2C física requiere
+pines, resistencias pull-up, frecuencia, tiempos y analizador lógico.
 
 ### 11 — Secure element simulado
 
@@ -254,7 +298,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07, 08 y 09 fueron compilados,
+- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07, 08, 09 y 10 fueron compilados,
   programados y comprobados físicamente en las tres variantes desde VS Code
   con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.
