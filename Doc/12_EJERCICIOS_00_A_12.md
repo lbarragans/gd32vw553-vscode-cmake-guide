@@ -152,11 +152,62 @@ contexto normal de la tarea, después de ejecutar `mret`.
 
 ### 09 — Parser UART con CRC-8
 
-- **Assembly:** una FIFO alimenta la FSM `WAIT_SOF` a `READ_CRC`; se conserva
-  la última trama válida.
-- **FreeRTOS:** Queue RX, tarea parser y Queue de eventos separan las etapas.
-- **Prueba:** dos tramas válidas y una CRC alterada; para UART física cambie el
-  productor simulado por ISR con API `FromISR`.
+- **Referencia:** una FIFO circular recibe el flujo simulado y alimenta una FSM
+  con estados `WAIT_SOF`, `READ_LENGTH`, `READ_COMMAND`, `READ_PAYLOAD` y
+  `READ_CRC`.
+- **Assembly:** implementa FIFO, FSM y CRC-8/ATM con polinomio `0x07`; conserva
+  la última trama válida y contabiliza ruido, overflow y rechazos.
+- **FreeRTOS:** `producer_task` envía bytes a una Queue RX, `parser_task`
+  ejecuta la FSM y una Queue de eventos desacopla `indicator_task`.
+- **Prueba:** el flujo contiene dos bytes de ruido, dos tramas válidas, una
+  trama con CRC alterado y una longitud inválida.
+
+#### Formato y resultados
+
+```text
+SOF(0xA5) | LEN(0..8) | CMD | PAYLOAD | CRC-8
+```
+
+El CRC cubre `LEN + CMD + PAYLOAD`; no incluye `SOF`. Usa valor inicial
+`0x00`, polinomio `0x07`, sin reflexión y sin XOR final.
+
+| Caso | Resultado visible |
+| --- | --- |
+| trama válida `CMD=0x10` | dos destellos cortos |
+| CRC alterado en `CMD=0x20` | un destello largo |
+| longitud `0xFF` | un destello largo |
+| trama válida `CMD=0x30` | dos destellos cortos |
+| fin del ciclo | pausa y repetición |
+
+#### Ejecución manual en VS Code
+
+1. Abra únicamente `09_UART_Frame_Parser_CRC8` mediante **File > Open
+   Folder**.
+2. Revise `tools/local_config.ps1` y confirme las rutas del SDK bare-metal,
+   MSDK V1.0.3g, toolchain Nuclei y OpenOCD.
+3. Seleccione **Terminal > Run Task > Verify GD32 Environment**.
+4. Ejecute **Build + Flash Original** y observe un ciclo completo.
+5. Ejecute **Build + Flash Assembly** y confirme la misma secuencia.
+6. Ejecute **Build + Flash FreeRTOS**. La tarea limpia el MSDK compartido,
+   copia la aplicación, compila MBL/MSDK y programa `image-all.bin`.
+7. Confirme `Programming Finished`, `Verified OK` y `Resetting Target` en la
+   terminal integrada.
+
+#### Variables de comprobación
+
+| Variable | Incremento esperado por ciclo |
+| --- | ---: |
+| `g_frames_accepted` | `2` |
+| `g_frames_rejected` | `2` |
+| `g_crc_errors` | `1` |
+| `g_length_errors` | `1` |
+| `g_noise_bytes` | `2` |
+| `g_rx_overflows` | `0` |
+
+La última trama válida debe conservar `CMD=0x30`, `LEN=3` y payload
+`01 02 03`. Esta comprobación valida el parser con productor simulado. Para
+usar UART física, reemplace el productor por una ISR que publique con
+`xQueueSendFromISR`; esa ruta requiere una validación independiente.
 
 ### 10 — Mapa de registros I2C virtual
 
@@ -203,7 +254,7 @@ que solo compiló parcialmente ni sustituya un port sin verificar.
 
 ## Estado honesto de ejecución
 
-- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07 y 08 fueron compilados,
+- Los ejercicios 00, 01, 02, 03, 04, 05, 06, 07, 08 y 09 fueron compilados,
   programados y comprobados físicamente en las tres variantes desde VS Code
   con WCH-Link.
 - Las referencias bare-metal de 00–11 poseen infraestructura de compilación.

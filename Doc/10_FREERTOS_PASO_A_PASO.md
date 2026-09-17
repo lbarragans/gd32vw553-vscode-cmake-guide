@@ -157,3 +157,10 @@ En el ejercicio 08 validado, la entrada de excepción no llama al kernel: una
 rutina mínima conserva sus temporales, valida `mcause=2`, suma dos a `mepc` y
 regresa con `mret`. La tarea notifica al indicador únicamente después del
 retorno. El resultado físico confirmado es tres destellos cortos y una pausa.
+
+En el ejercicio 09 validado, las APIs centrales son `xQueueCreate`,
+`xQueueSend` y `xQueueReceive`. La Queue RX transporta bytes y la Queue de
+eventos transporta resultados, no punteros a variables locales. El productor
+simulado permite probar de forma repetible FIFO, FSM y CRC sin cable UART. Una
+ISR física deberá usar `xQueueSendFromISR` y la macro de cambio de contexto del
+port; no debe llamar la versión normal de `xQueueSend` desde la ISR.
