@@ -5,11 +5,11 @@
 | Dispositivo | Cómo aparece | Uso |
 | --- | --- | --- |
 | WCH-Link/CMSIS-DAP | dispositivo USB de depuración y a veces COM | JTAG, OpenOCD, GDB |
-| CH340 de la placa | `USB-SERIAL CH340 (COMx)` | bootloader UART del ejercicio 12 |
+| CH340 de la placa | `USB-SERIAL CH340 (COMx)` | UART opcional; no se usa para Blink Polling |
 
-El puerto serial del WCH-Link no sustituye necesariamente el CH340 conectado
-al bootloader de la placa. Los ejercicios 00–11 usan normalmente JTAG/OpenOCD;
-el 12 usa la ruta UART/ISP descrita por su SDK.
+Blink Polling y los ejercicios 00–11 usan JTAG/OpenOCD. El ejercicio 12 validado
+también se programa mediante WCH-Link/OpenOCD; su capítulo explica la imagen
+MBL+MSDK especial.
 
 ## 11.2 Comprobación física
 
@@ -68,10 +68,43 @@ dato usado por OpenOCD.
 6. Abra **File > Open Folder** y seleccione la raíz exacta del ejercicio.
 7. Acepte Workspace Trust únicamente para estos repositorios conocidos.
 
+## 11.4.1 Driver USB y uso seguro de Zadig
+
+Primero conecte el WCH-Link y pruebe el driver instalado por el fabricante. Si
+Windows muestra `WCH CMSIS-DAP` con estado **OK** y OpenOCD logra encontrarlo,
+**no use Zadig**.
+
+Use Zadig únicamente si se cumplen simultáneamente estas condiciones:
+
+- el WCH-Link aparece físicamente conectado;
+- cable y puerto USB ya fueron descartados;
+- OpenOCD informa `unable to find a matching CMSIS-DAP device`;
+- el Administrador de dispositivos muestra la interfaz CMSIS-DAP sin un driver
+  utilizable.
+
+Procedimiento de recuperación:
+
+1. Descargue Zadig desde <https://zadig.akeo.ie/>.
+2. Ejecútelo como administrador.
+3. Active **Options > List All Devices**.
+4. Seleccione exactamente `WCH CMSIS-DAP`, interfaz `MI_00` o Interface 0.
+5. Confirme el identificador `VID 1A86` y `PID 8012`.
+6. Seleccione `WinUSB` como driver de destino.
+7. Pulse **Install Driver** o **Replace Driver**.
+8. Desconecte y reconecte el WCH-Link.
+9. Ejecute nuevamente **Verify GD32 Environment** y la tarea de flash.
+
+![Selección segura de WCH CMSIS-DAP en Zadig](images/zadig_wch_cmsis_dap_winusb.svg)
+
+**No seleccione `WCH-Link SERIAL`, `MI_01`, el teclado, el ratón ni otro USB.**
+Cambiar la interfaz equivocada puede eliminar el puerto COM o afectar otro
+dispositivo. Si el puerto serial desaparece, reinstale el driver oficial WCH
+desde Administrador de dispositivos; no siga reemplazando interfaces al azar.
+
 ## 11.5 Instalar y verificar programas
 
-Instale Git, CMake y Ninja. GD32 Embedded Builder proporciona normalmente el
-toolchain Nuclei, GDB y OpenOCD usados por estos laboratorios.
+Instale todo bajo `C:\gd32_tools` y agregue al PATH las cuatro rutas indicadas
+en [02_INSTALLATION_WINDOWS.md](02_INSTALLATION_WINDOWS.md).
 
 ```powershell
 git --version
@@ -104,10 +137,10 @@ Desde el explorador lateral de VS Code:
 Complete con barras `/` o rutas PowerShell válidas:
 
 ```powershell
-$GD32_SDK_ROOT = "C:/GD32/GD32VW55x_Firmware_Library_V1.6.0"
-$GD32_MSDK_ROOT = "C:/GD32/GD32VW55x_RELEASE_V1.0.3g"
-$NUCLEI_TOOLCHAIN_DIR = "C:/ruta/toolchain/bin"
-$OPENOCD_ROOT = "C:/ruta/openocd"
+$GD32_SDK_ROOT = "C:/gd32_tools/GD32VW55x_Firmware_Library_V1.6.0"
+$GD32_MSDK_ROOT = "C:/gd32_tools/GD32VW55x_RELEASE_V1.0.3g"
+$NUCLEI_TOOLCHAIN_DIR = "C:/gd32_tools/nuclei/bin"
+$OPENOCD_ROOT = "C:/gd32_tools/openocd"
 ```
 
 `OPENOCD_ROOT` debe contener `bin` y `scripts`. No publique
@@ -129,6 +162,9 @@ Durante `Flash GD32 Debug`, la prueba correcta muestra
 `Examined RISC-V core; found 1 harts`. Si aparece
 `all ones`, revise alimentación, GND, TCK, TMS, TDI y TDO antes de cambiar
 software o controladores.
+
+La configuración comprobada para este WCH-Link es CMSIS-DAP v2 mediante
+`usb_bulk`, VID/PID `1A86:8012`, JTAG y velocidad de 50 kHz.
 
 ## 11.8 Ejecutar las tres variantes de cada ejercicio
 

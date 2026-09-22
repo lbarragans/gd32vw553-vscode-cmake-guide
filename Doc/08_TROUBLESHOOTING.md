@@ -27,6 +27,9 @@ GDB/VS Code, compilación o lógica. Consulte también
 | Breakpoint gris o no alcanzado | ELF incorrecto, optimización o línea sin instrucción. | Use Debug, recompilar, flash y un punto en una sentencia ejecutable. |
 | LED no cambia | Solo se compiló; no se programó. | Ejecute `Build + Flash GD32`. |
 | OpenOCD no encuentra el probe | Cable, driver, puerto ocupado o conexión JTAG. | Reconecte, cierre otras sesiones y revise el Administrador de dispositivos. |
+| `unable to find a matching CMSIS-DAP device` | Interfaz incorrecta, driver o WCH-Link desconectado. | Confirme `WCH CMSIS-DAP` VID:PID `1A86:8012`; use Zadig solo como recuperación sobre MI_00. |
+| `JTAG scan chain ... all ones` | El probe existe pero no recibe respuesta del MCU. | Revise alimentación, GND y TCK/TMS/TDI/TDO; mantenga 50 kHz. |
+| `Unsupported DTM version: 13` | Lectura JTAG inestable. | Baje a 50 kHz, reinicie placa/probe y revise el cableado. |
 
 ## Limpiar una configuración antigua
 
@@ -61,6 +64,13 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tools\configure.ps1
 ```
 
 No es necesario cambiar permanentemente la política del computador.
+
+## Advertencia sobre Zadig
+
+No instale WinUSB por rutina. Si el probe ya funciona, cambiar el driver no
+mejora nada. Cuando sea imprescindible, seleccione únicamente `WCH CMSIS-DAP`
+Interface 0/MI_00 con VID:PID `1A86:8012`. Nunca seleccione `WCH-Link SERIAL`
+MI_01. Consulte la captura orientativa del capítulo 11.
 
 ## Conflicto en el puerto 3333
 

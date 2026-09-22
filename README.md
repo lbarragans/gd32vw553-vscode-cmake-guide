@@ -35,36 +35,36 @@ flowchart TD
 
 ## Ruta rápida
 
-1. Instale los componentes descritos en [Doc/02_INSTALLATION_WINDOWS.md](Doc/02_INSTALLATION_WINDOWS.md).
-2. Duplique `tools/local_config.example.ps1` desde el explorador de VS Code y
+1. Siga [Clase 01: Windows limpio a Blink](Doc/00_CLASE_01_BLINK_DESDE_CERO.md).
+2. Instale todo bajo `C:\gd32_tools` y ejecute `check_env.bat` antes de VS Code.
+3. Duplique `tools/local_config.example.ps1` desde el explorador de VS Code y
    cambie el nombre de la copia a `local_config.ps1`.
-3. Edite en esa copia las cuatro rutas locales.
-4. Abra **esta carpeta**, no su carpeta superior, en VS Code.
-5. Acepte **Trust this folder** si confía en el contenido descargado.
-6. Ejecute `Terminal > Run Task > Verify GD32 Environment`.
-7. Ejecute `Terminal > Run Task > Build + Flash GD32`.
-8. Compruebe que el LED de PC13 cambia de estado.
-9. Ejecute `Create Debug Configuration` y después presione `F5` para depurar.
+4. Conserve las rutas normalizadas propuestas.
+5. Abra **esta carpeta**, no su carpeta superior, en VS Code.
+6. Acepte **Trust this folder** si confía en el contenido descargado.
+7. Ejecute `Terminal > Run Task > Verify GD32 Environment`.
+8. Ejecute `Terminal > Run Task > Build + Flash GD32`.
+9. Compruebe que el LED de PC13 cambia de estado.
+10. Ejecute `Create Debug Configuration` y presione `F5` para depurar.
 
 ## Ruta completa para los ejercicios 00–12
 
 Si este repositorio se usa como manual del curso, siga en orden:
 
 1. [hardware y herramientas](Doc/01_HARDWARE_AND_TOOLS.md);
-2. [instalación en Windows](Doc/02_INSTALLATION_WINDOWS.md);
-3. [VS Code y reconocimiento de la placa](Doc/11_VSCODE_Y_CONEXION_PLACA.md);
-4. [compilar, programar y depurar](Doc/06_BUILD_FLASH_DEBUG.md);
-5. [Assembly paso a paso](Doc/09_ASSEMBLY_PASO_A_PASO.md);
-6. [FreeRTOS paso a paso](Doc/10_FREERTOS_PASO_A_PASO.md);
-7. [ejecución de los ejercicios 00–12](Doc/12_EJERCICIOS_00_A_12.md);
-8. [flujo especial WiFi del ejercicio 12](Doc/13_EJERCICIO_12_WIFI.md).
+2. [clase inicial desde cero](Doc/00_CLASE_01_BLINK_DESDE_CERO.md);
+3. [instalación en Windows](Doc/02_INSTALLATION_WINDOWS.md);
+4. [VS Code y reconocimiento de la placa](Doc/11_VSCODE_Y_CONEXION_PLACA.md);
+5. [compilar, programar y depurar](Doc/06_BUILD_FLASH_DEBUG.md);
+6. [Assembly paso a paso](Doc/09_ASSEMBLY_PASO_A_PASO.md);
+7. [FreeRTOS paso a paso](Doc/10_FREERTOS_PASO_A_PASO.md);
+8. [ejecución de los ejercicios 00–12](Doc/12_EJERCICIOS_00_A_12.md);
+9. [flujo especial WiFi del ejercicio 12](Doc/13_EJERCICIO_12_WIFI.md).
 
 La guía distingue deliberadamente entre **fuente preparada**, **firmware que
 compila** y **variante validada en placa**. Las carpetas FreeRTOS de 00–12 se
 integran como aplicaciones del MSDK V1.0.3g para reutilizar el port
-GD32VW553/ECLIC oficial. Los ejercicios 00–11 ya tienen validación física de
-Original, Assembly y FreeRTOS registrada; la validación final se conserva por
-ejercicio.
+GD32VW553/ECLIC oficial. La validación física final se registra por ejercicio.
 
 ## Operación sin escribir comandos
 
@@ -96,6 +96,7 @@ Después de compilar aparecen en `build/debug/`:
 
 | Documento | Contenido |
 | --- | --- |
+| [00_CLASE_01_BLINK_DESDE_CERO](Doc/00_CLASE_01_BLINK_DESDE_CERO.md) | Secuencia docente desde Windows limpio hasta LED funcional. |
 | [01_HARDWARE_AND_TOOLS](Doc/01_HARDWARE_AND_TOOLS.md) | Placa, depurador y función de cada herramienta. |
 | [02_INSTALLATION_WINDOWS](Doc/02_INSTALLATION_WINDOWS.md) | Instalación y localización de rutas. |
 | [03_PROJECT_STRUCTURE](Doc/03_PROJECT_STRUCTURE.md) | Estructura del repositorio y archivos locales. |
@@ -108,7 +109,7 @@ Después de compilar aparecen en `build/debug/`:
 | [10_FREERTOS_PASO_A_PASO](Doc/10_FREERTOS_PASO_A_PASO.md) | Kernel, port, heap, configuración, APIs y validación. |
 | [11_VSCODE_Y_CONEXION_PLACA](Doc/11_VSCODE_Y_CONEXION_PLACA.md) | Drivers, USB, JTAG, puertos, extensiones y F5. |
 | [12_EJERCICIOS_00_A_12](Doc/12_EJERCICIOS_00_A_12.md) | Orden de ejecución y evidencia esperada para cada ejercicio. |
-| [13_EJERCICIO_12_WIFI](Doc/13_EJERCICIO_12_WIFI.md) | SDK WiFi, MBL/MSDK, UART/CH340, HTTP y alcance Assembly. |
+| [13_EJERCICIO_12_WIFI](Doc/13_EJERCICIO_12_WIFI.md) | SDK WiFi, MBL/MSDK, WCH-Link/OpenOCD, HTTP y alcance Assembly. |
 
 ## Estructura principal
 
@@ -120,6 +121,7 @@ GD32VW553_VSCode_CMake_Guide/
 ├── Src/                  # aplicación mínima
 ├── cmake/                # toolchain y generación del listado
 ├── tools/                # scripts de configuración, flash y diagnóstico
+├── check_env.bat         # verificación previa antes de abrir VS Code
 ├── CMakeLists.txt        # descripción del firmware
 ├── CMakePresets.json     # configuraciones Debug y Release
 └── README.md

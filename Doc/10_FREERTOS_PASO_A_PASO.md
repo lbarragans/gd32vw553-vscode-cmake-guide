@@ -86,12 +86,6 @@ las rutas del toolchain y OpenOCD, compila MBL + MSDK y comprueba la creación d
 `scripts/images/image-all.bin`. En VS Code abra `Terminal > Run Task` y elija
 `Build + Flash FreeRTOS`. No escriba comandos en la consola.
 
-El script también actualiza la fecha de los fuentes copiados. Esto evita que
-Make reutilice un `main.o` anterior cuando un archivo extraído de un ZIP tiene
-una marca de tiempo idéntica o futura. Si la salida advierte que `main.c is
-more recent than object file`, vuelva a ejecutar **Build + Flash FreeRTOS** con
-la versión actual del script y confirme que `main.o` se reconstruye.
-
 Use `-Clean` al cambiar de ejercicio, porque todos comparten el directorio de
 compilación del MSDK. La programación usa WCH-Link/CMSIS-DAP en modo USB bulk,
 VID:PID `1A86:8012`, JTAG a 50 kHz y dirección base `0x08000000`.
@@ -142,8 +136,6 @@ Coloque breakpoints en la primera línea de cada tarea y observe:
 | símbolos `xPort*` indefinidos | falta port RISC-V o `portASM.S` |
 | queda en `vTaskStartScheduler` | tick/IRQ/heap/port incorrectos |
 | HardFault/trap al cambiar tarea | ABI, pila, port o alineación incompatibles |
-| Ejercicio 08 se detiene en `c.unimp` | entrada de excepción o restauración de `mepc` incorrecta |
-| Se programa una versión anterior | objeto reutilizado; limpie y fuerce la fecha del fuente copiado |
 | LED funciona pero ninguna otra tarea | prioridad, bloqueo o starvación |
 | tick dos o cuatro veces rápido | `configCPU_CLOCK_HZ` o divisor incorrecto |
 
@@ -152,31 +144,3 @@ Coloque breakpoints en la primera línea de cada tarea y observe:
 La variante FreeRTOS solo está cerrada cuando se verifican kernel/port usados,
 compilación, enlace, scheduler activo, patrón físico, contadores y ausencia de
 overflow de pila. «Fuente lista» no equivale a «firmware validado».
-
-En el ejercicio 08 validado, la entrada de excepción no llama al kernel: una
-rutina mínima conserva sus temporales, valida `mcause=2`, suma dos a `mepc` y
-regresa con `mret`. La tarea notifica al indicador únicamente después del
-retorno. El resultado físico confirmado es tres destellos cortos y una pausa.
-
-En el ejercicio 09 validado, las APIs centrales son `xQueueCreate`,
-`xQueueSend` y `xQueueReceive`. La Queue RX transporta bytes y la Queue de
-eventos transporta resultados, no punteros a variables locales. El productor
-simulado permite probar de forma repetible FIFO, FSM y CRC sin cable UART. Una
-ISR física deberá usar `xQueueSendFromISR` y la macro de cambio de contexto del
-port; no debe llamar la versión normal de `xQueueSend` desde la ISR.
-
-En el ejercicio 10 validado, una tarea ejecuta el guion I2C virtual y envía por
-valor cada código ACK/NACK a la Queue del indicador. La Queue separa el tiempo
-del protocolo simulado del tiempo de los pulsos del LED. Esta arquitectura no
-convierte el simulador en un periférico I2C físico: no existen ISR de I2C ni
-formas de onda SDA/SCL en esta variante.
-
-En el ejercicio 11 validado, `auth_task` ejecuta cinco casos reproducibles y
-envía estructuras de resultado por valor a `indicator_task`. La Queue separa
-el cálculo y la decisión de autenticación del tiempo empleado para mostrar los
-pulsos del LED. Además de `main.c` y `app_cfg.h`, la tarea de construcción debe
-copiar `sha256.c` y `sha256.h` a `MSDK/app`, actualizar sus fechas y limpiar el
-build compartido; de lo contrario, CMake puede reutilizar un objeto anterior o
-no registrar el módulo nuevo. La prueba confirmó dos aceptaciones y tres
-rechazos por ciclo. Es una simulación didáctica: la clave permanece en Flash y
-no dispone de las protecciones físicas de un elemento seguro real.

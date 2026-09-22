@@ -5,6 +5,12 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 set(NUCLEI_TOOLCHAIN_DIR "" CACHE PATH
     "Directorio que contiene riscv-nuclei-elf-gcc")
 
+if(NOT NUCLEI_TOOLCHAIN_DIR AND CMAKE_HOST_WIN32 AND
+   EXISTS "C:/gd32_tools/nuclei/bin/riscv-nuclei-elf-gcc.exe")
+    set(NUCLEI_TOOLCHAIN_DIR "C:/gd32_tools/nuclei/bin" CACHE PATH
+        "Directorio del toolchain Nuclei" FORCE)
+endif()
+
 if(NOT NUCLEI_TOOLCHAIN_DIR AND DEFINED ENV{NUCLEI_TOOLCHAIN_DIR})
     file(TO_CMAKE_PATH "$ENV{NUCLEI_TOOLCHAIN_DIR}" NUCLEI_TOOLCHAIN_DIR)
 endif()

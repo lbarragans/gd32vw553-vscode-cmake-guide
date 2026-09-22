@@ -1,136 +1,143 @@
-# 2. Instalación en Windows
+# 2. Preparación completa de Windows desde cero
 
-## 2.1 Componentes
+Este capítulo se realiza **antes de abrir VS Code**. Al terminar, el archivo
+`check_env.bat` debe indicar que el entorno base está listo.
 
-Instale:
+## 2.1 Ruta única para toda la clase
 
-1. Visual Studio Code.
-2. Git para Windows.
-3. CMake 3.20 o posterior.
-4. Ninja.
-5. GD32 Embedded Builder, que contiene Nuclei RISC-V GCC, GDB y OpenOCD.
-6. `GD32VW55x_Firmware_Library_V1.6.0`.
-
-## 2.1.1 Descargas y función de cada paquete
-
-| Componente | Sitio oficial | Para qué se necesita |
-| --- | --- | --- |
-| VS Code | <https://code.visualstudio.com/Download> | editor, tareas y depuración |
-| Git for Windows | <https://git-scm.com/download/win> | clonar y actualizar repositorios |
-| CMake | <https://cmake.org/download/> | generar el sistema de construcción |
-| Ninja | <https://github.com/ninja-build/ninja/releases> | ejecutar las reglas de compilación |
-| GD32VW553 y recursos | <https://www.gigadevice.com/product/mcu/wireless-mcus/gd32vw553-series> | ficha, SDK, firmware y herramientas GD32 |
-| MSDK oficial GD32VW553 | <https://www.gigadevice.com/product/mcu/mcus-product-selector/gd32vw553hmq6> | FreeRTOS, port Nuclei/ECLIC, MBL, WiFi y lwIP para las variantes FreeRTOS 00–12 |
-
-Descargue herramientas de fabricante únicamente desde GigaDevice. Los nombres
-y versiones visibles en el portal pueden cambiar; para reproducir los
-laboratorios conserve localmente las versiones validadas que se indican aquí.
-
-Hay dos paquetes GD32 diferentes:
-
-| Paquete | Ejercicios | Contenido |
-| --- | --- | --- |
-| `GD32VW55x_Firmware_Library_V1.6.0` | 00–11 | startup, linker, drivers y ejemplos bare-metal |
-| `GD32VW55x_RELEASE_V1.0.3g` | FreeRTOS 00–12 | MBL/MSDK, FreeRTOS, port Nuclei/ECLIC, WiFi, lwIP y firmware de radio |
-
-No reemplace uno por el otro solo porque ambos contienen `GD32VW55x`.
-Para ejecutar estos laboratorios no descargue ni mezcle un kernel FreeRTOS
-genérico: use el que viene integrado en `GD32VW55x_RELEASE_V1.0.3g`.
-
-En la página oficial del dispositivo, localice exactamente
-`GD32VW55x_RELEASE_V1.0.3g`, descárguelo y compruebe el archivo con:
-
-```powershell
-Get-ChildItem "$HOME\Downloads" |
-  Where-Object Name -Match "GD32VW55x.*RELEASE" |
-  Sort-Object LastWriteTime -Descending |
-  Format-Table Name,Length,LastWriteTime
-```
-
-En VS Code instale las extensiones recomendadas cuando aparezca la
-notificación del repositorio:
-
-- C/C++ de Microsoft;
-- CMake Tools de Microsoft;
-- Cortex-Debug.
-
-Después de instalar, continúe con
-[11_VSCODE_Y_CONEXION_PLACA.md](11_VSCODE_Y_CONEXION_PLACA.md) para reconocer
-el probe, el CH340 y configurar F5.
-
-## 2.2 Comprobar programas globales
-
-Abra PowerShell y ejecute únicamente estas líneas, sin copiar el texto `PS C:\...>`:
-
-```powershell
-cmake --version
-ninja --version
-git --version
-```
-
-Si PowerShell dice que un comando no se reconoce, instale el programa o agregue
-su directorio al `PATH`, cierre VS Code y vuelva a abrirlo.
-
-## 2.3 Localizar las tres rutas
-
-### SDK
-
-La raíz correcta contiene `Firmware`, `Utilities` y `Template`. Ejemplo:
+Todos los estudiantes deben usar:
 
 ```text
-C:/Users/usuario/OneDrive/Escritorio/GD32VW55x_Firmware_Library_V1.6.0
+C:\gd32_tools
 ```
 
-Prueba:
+No use Escritorio, Descargas, OneDrive, tildes ni carpetas con espacios. La
+ruta común evita que CMake, Ninja, OpenOCD y los scripts reciban nombres
+distintos en cada computador.
 
-```powershell
-Test-Path "C:\ruta\al\SDK\Firmware\GD32VW55x_standard_peripheral\system_gd32vw55x.c"
+Cree estas carpetas desde el Explorador de Windows:
+
+```text
+C:\gd32_tools\cmake
+C:\gd32_tools\ninja
+C:\gd32_tools\nuclei
+C:\gd32_tools\openocd
+C:\gd32_tools\GD32VW55x_Firmware_Library_V1.6.0
+C:\gd32_tools\GD32VW55x_RELEASE_V1.0.3g
 ```
 
-### Toolchain Nuclei
+La última carpeta solo será necesaria al llegar a FreeRTOS o WiFi.
 
-Debe ser la carpeta `bin` que contiene `riscv-nuclei-elf-gcc.exe`:
+## 2.2 Qué debe descargar
 
-```powershell
-Get-ChildItem "C:\ruta\a\GD32EmbeddedBuilder" `
-  -Filter "riscv-nuclei-elf-gcc.exe" -Recurse |
-  Select-Object -ExpandProperty FullName
-```
+| Paquete | Contenido esperado | Uso |
+| --- | --- | --- |
+| Nuclei RISC-V GCC | `riscv-nuclei-elf-gcc.exe`, GDB, objcopy y size | compilar y depurar |
+| CMake para Windows x64 | `cmake.exe` | generar el sistema de construcción |
+| Ninja para Windows | `ninja.exe` | ejecutar la compilación |
+| OpenOCD validado para GD32 | `bin/openocd.exe` y `scripts/target/gd32vw55x.cfg` | comunicar WCH-Link y placa |
+| Firmware Library V1.6.0 | carpetas `Firmware` y `Utilities` | Original y Assembly 00–11 |
+| VS Code y Git | instaladores Windows | editor, tareas y repositorios |
 
-En `local_config.ps1` se guarda la carpeta, no el nombre del ejecutable.
+El compilador correcto de este curso es `riscv-nuclei-elf-gcc`. No use
+`riscv-none-elf-gcc`: es otro prefijo y estos proyectos no lo buscan.
+
+El toolchain Nuclei y el OpenOCD compatible pueden extraerse del paquete
+validado de GD32 Embedded Builder. Aunque provengan del mismo instalador, se
+organizan en las carpetas normalizadas para que todos tengan las mismas rutas.
+
+Descargas oficiales:
+
+- VS Code: <https://code.visualstudio.com/Download>
+- Git: <https://git-scm.com/download/win>
+- CMake: <https://cmake.org/download/>
+- Ninja: <https://github.com/ninja-build/ninja/releases>
+- GD32VW553: <https://www.gigadevice.com/product/mcu/wireless-mcus/gd32vw553-series>
+
+No use un OpenOCD que no contenga `scripts/target/gd32vw55x.cfg`.
+
+## 2.3 Cómo extraer cada paquete
+
+### CMake
+
+1. Descargue el ZIP de Windows x64.
+2. Localice la carpeta que contiene `bin`, `doc` y `share`.
+3. Copie su contenido dentro de `C:\gd32_tools\cmake`.
+4. Compruebe `C:\gd32_tools\cmake\bin\cmake.exe`.
+
+### Ninja
+
+Extraiga `ninja.exe` desde `ninja-win.zip` directamente en
+`C:\gd32_tools\ninja`.
+
+### Nuclei GCC
+
+1. Localice la carpeta cuyo `bin` contiene `riscv-nuclei-elf-gcc.exe`.
+2. Copie el toolchain dentro de `C:\gd32_tools\nuclei`.
+3. Compruebe `C:\gd32_tools\nuclei\bin\riscv-nuclei-elf-gcc.exe`.
 
 ### OpenOCD
 
-Localice `openocd.exe`:
+1. Copie juntas las carpetas `bin` y `scripts` de la distribución GD32 dentro
+   de `C:\gd32_tools\openocd`.
+2. Compruebe:
 
-```powershell
-Get-ChildItem "C:\ruta\a\GD32EmbeddedBuilder" `
-  -Filter "openocd.exe" -Recurse |
-  Select-Object -ExpandProperty FullName
+```text
+C:\gd32_tools\openocd\bin\openocd.exe
+C:\gd32_tools\openocd\scripts\target\gd32vw55x.cfg
 ```
 
-`OPENOCD_ROOT` debe ser el directorio padre que contiene simultáneamente
-`bin/` y `scripts/`.
+### Firmware Library
 
-## 2.4 Crear la configuración privada
+Extraiga `GD32VW55x_Firmware_Library_V1.6.0` bajo `C:\gd32_tools`. Evite una
+carpeta duplicada como `...\V1.6.0\V1.6.0\Firmware`.
 
-En VS Code expanda `tools`, copie `local_config.example.ps1`, pegue la copia
-en la misma carpeta y renómbrela `local_config.ps1`. Ábrala en el editor.
+Debe existir:
 
-Ejemplo de forma, reemplazando todas las rutas:
-
-```powershell
-$GD32_SDK_ROOT = "C:/ruta/GD32VW55x_Firmware_Library_V1.6.0"
-$GD32_MSDK_ROOT = "C:/GD32/GD32VW55x_RELEASE_V1.0.3g"
-$NUCLEI_TOOLCHAIN_DIR = "C:/ruta/NucleiRISCVGCC/bin"
-$OPENOCD_ROOT = "C:/ruta/OpenOCD/xpack-openocd-0.11.0-3"
+```text
+C:\gd32_tools\GD32VW55x_Firmware_Library_V1.6.0\Firmware\GD32VW55x_standard_peripheral\system_gd32vw55x.c
 ```
 
-Se recomiendan barras `/` dentro de las cadenas. No publique este archivo.
+## 2.4 Agregar cuatro carpetas al PATH
 
-## 2.5 Verificar todo de una vez
+1. Busque **variables de entorno** desde Inicio.
+2. Abra **Editar las variables de entorno del sistema**.
+3. Pulse **Variables de entorno...**.
+4. En **Variables de usuario**, seleccione `Path` y pulse **Editar**.
+5. Pulse **Nuevo** y agregue una por una:
 
-En VS Code abra `Terminal > Run Task` y seleccione **Verify GD32
-Environment**.
+```text
+C:\gd32_tools\cmake\bin
+C:\gd32_tools\ninja
+C:\gd32_tools\nuclei\bin
+C:\gd32_tools\openocd\bin
+```
 
-Todas las líneas deben comenzar por `[OK]`.
+6. Confirme todas las ventanas con **Aceptar**.
+7. Cierre terminales y VS Code. El PATH nuevo solo aparece en procesos que se
+   abren después.
+
+Agregue carpetas, no nombres de archivos `.exe`, y no borre entradas previas.
+
+## 2.5 Verificación antes de abrir VS Code
+
+Haga doble clic en `check_env.bat`, ubicado en la raíz de esta guía. Comprueba
+CMake, Ninja, Git, GCC, GDB, OpenOCD, el SDK y el target del GD32.
+
+Todas las líneas deben empezar por `[OK]`. Si aparece `[FALTA]`, compruebe el
+archivo, revise la entrada del PATH, cierre la ventana y repita.
+
+## 2.6 Configuración privada del repositorio
+
+1. Abra el repositorio en VS Code.
+2. Copie `tools/local_config.example.ps1`.
+3. Renombre la copia como `tools/local_config.ps1`.
+4. Si usó `C:\gd32_tools`, conserve sus valores propuestos.
+5. No publique `local_config.ps1` en Git.
+
+## 2.7 Verificación dentro de VS Code
+
+Ejecute **Terminal > Run Task > Verify GD32 Environment**. Esta segunda prueba
+revisa startup, linker, board support, GDB y scripts de OpenOCD.
+
+Solo continúe a Blink Polling cuando ambas verificaciones terminen sin errores.

@@ -51,6 +51,29 @@ Abra `Terminal > Run Task`:
 placa use explícitamente `Build + Flash GD32`, porque compilar no modifica la
 flash.
 
+## CMake Presets y rutas reproducibles
+
+La selección de generador, carpeta de salida, modo Debug/Release, toolchain y
+SDK se encuentra en `CMakePresets.json`. No se guardan rutas de compilación en
+`.vscode/settings.json`.
+
+Los presets compartidos usan la estructura docente:
+
+```text
+C:/gd32_tools/GD32VW55x_Firmware_Library_V1.6.0
+C:/gd32_tools/nuclei/bin
+```
+
+Por eso **CMake: Select Configure Preset** debe mostrar `GD32VW553 Debug` y
+`GD32VW553 Release` en cualquier computador preparado según la guía. El preset
+Debug genera exclusivamente `build/debug`; Release usa `build/release`.
+
+`tools/local_config.ps1` conserva OpenOCD y permite reemplazar rutas en un
+equipo administrativo que no pueda usar `C:\gd32_tools`. La línea de comandos
+de `tools/configure.ps1` tiene prioridad sobre los valores predeterminados del
+preset. Así se obtiene un camino uniforme para estudiantes sin impedir una
+configuración local excepcional.
+
 ## launch.json reproducible
 
 `.vscode/launch.example.json` solo muestra la estructura. No debe editarse con

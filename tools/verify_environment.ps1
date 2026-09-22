@@ -13,6 +13,10 @@ if (-not (Test-Path $ConfigFile)) {
 $Checks = @(
     @{ Name = "CMake"; Path = (Get-Command cmake -ErrorAction SilentlyContinue).Source },
     @{ Name = "Ninja"; Path = (Get-Command ninja -ErrorAction SilentlyContinue).Source },
+    @{ Name = "Git"; Path = (Get-Command git -ErrorAction SilentlyContinue).Source },
+    @{ Name = "GCC RISC-V en PATH"; Path = (Get-Command riscv-nuclei-elf-gcc -ErrorAction SilentlyContinue).Source },
+    @{ Name = "GDB RISC-V en PATH"; Path = (Get-Command riscv-nuclei-elf-gdb -ErrorAction SilentlyContinue).Source },
+    @{ Name = "OpenOCD en PATH"; Path = (Get-Command openocd -ErrorAction SilentlyContinue).Source },
     @{ Name = "Compilador RISC-V"; Path = (Join-Path $NUCLEI_TOOLCHAIN_DIR "riscv-nuclei-elf-gcc.exe") },
     @{ Name = "GDB RISC-V"; Path = (Join-Path $NUCLEI_TOOLCHAIN_DIR "riscv-nuclei-elf-gdb.exe") },
     @{ Name = "OpenOCD"; Path = (Join-Path $OPENOCD_ROOT "bin/openocd.exe") },
